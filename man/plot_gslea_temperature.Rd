@@ -9,7 +9,7 @@ plot_gslea_temperature(
   var,
   EARs = 0,
   groups = NULL,
-  years = c(1990, 2023),
+  year_range = c(1990, 2023),
   lang = "en",
   fit_smooth = TRUE,
   method = "gam",
@@ -32,7 +32,7 @@ plot_gslea_temperature(
 
 \item{groups}{Optional named list to aggregate EARs (e.g., \code{list("Northern" = 1:4)}).}
 
-\item{years}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
+\item{year_range}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
 \item{lang}{Language for labels: \code{"en"} or \code{"fr"}.}
 
@@ -72,9 +72,9 @@ mean and translated.
 \dontrun{
 # Compare regions with a fixed Y-axis scale and custom colors
 my_regions <- list("Northern" = 1:4, "Southern" = c(5, 6, 50))
-plot_gslea_temperature(EA.data, sst.month10,
-                       groups = my_regions,
-                       facet_scales = "fixed",
-                       col_palette = c("Northern" = "royalblue", "Southern" = "firebrick"))
+plot_gslea_temperature(EA.data, sst.month10, year_range = c(1960, 2015),
+                      groups = my_regions,
+                      facet_scales = "fixed", lang = 'fr',
+                      col_palette = c("Nord du GSL" = "royalblue", "Sud du GSL" = "royalblue"))
 }
 }

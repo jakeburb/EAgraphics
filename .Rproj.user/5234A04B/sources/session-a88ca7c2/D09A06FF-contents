@@ -1,3 +1,6 @@
+# Functions to make graphs and tables for the Gulf of St. Lawrence physical
+# and biological environment. Using data from gslea which is a dependency
+# of this package.
 #' Plot Temperature data from gslea by EAR
 #'
 #' @description
@@ -9,7 +12,7 @@
 #' @param var Temperature variable to plot (unquoted, e.g., \code{sst.month10}).
 #' @param EARs Vector of EAR identifiers. Defaults to \code{0} (Entire Gulf).
 #' @param groups Optional named list to aggregate EARs (e.g., \code{list("Northern" = 1:4)}).
-#' @param years Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
+#' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"} or \code{"fr"}.
 #' @param fit_smooth Logical. If \code{TRUE}, fits a GAM smoother.
 #' @param method Smoothing method. Defaults to \code{"gam"}.
@@ -33,13 +36,13 @@
 #' \dontrun{
 #' # Compare regions with a fixed Y-axis scale and custom colors
 #' my_regions <- list("Northern" = 1:4, "Southern" = c(5, 6, 50))
-#' plot_gslea_temperature(EA.data, sst.month10,
-#'                        groups = my_regions,
-#'                        facet_scales = "fixed",
-#'                        col_palette = c("Northern" = "royalblue", "Southern" = "firebrick"))
+#'plot_gslea_temperature(EA.data, sst.month10, year_range = c(1960, 2015),
+#'                       groups = my_regions,
+#'                       facet_scales = "fixed", lang = 'fr',
+#'                       col_palette = c("Nord du GSL" = "royalblue", "Sud du GSL" = "royalblue"))
 #' }
 #' @export
-plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, years = c(1990, 2023),
+plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
                                    lang = "en", fit_smooth = TRUE, method = "gam",
                                    formula = y ~ s(x, bs = "cs", k = 15),
                                    col_palette = NULL, ear_names = NULL,
@@ -72,18 +75,18 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, years = c
   base_label <- if(var_name_raw %in% names(lookup[[lang]])) lookup[[lang]][var_name_raw] else var_name_raw
 
   all_ears_char <- if(!is.null(groups)) as.character(unlist(groups)) else as.character(EARs)
-  plot_df <- data %>%
-    dplyr::mutate(EAR_tmp = as.character(EAR)) %>%
-    dplyr::filter(year >= years[1], year <= years[2], EAR_tmp %in% all_ears_char, variable == var_name_raw)
+  plot_df <- data |>
+    dplyr::mutate(EAR_tmp = as.character(EAR)) |>
+    dplyr::filter(year >= year_range[1], year <= year_range[2], EAR_tmp %in% all_ears_char, variable == var_name_raw)
 
   if (!is.null(groups)) {
-    group_map <- stack(groups) %>% dplyr::mutate(EAR_tmp = as.character(values)) %>% dplyr::rename(ear_label = ind)
-    plot_df <- plot_df %>%
-      dplyr::inner_join(group_map, by = "EAR_tmp") %>%
-      dplyr::group_by(year, ear_label) %>%
+    group_map <- stack(groups) |> dplyr::mutate(EAR_tmp = as.character(values)) |> dplyr::rename(ear_label = ind)
+    plot_df <- plot_df |>
+      dplyr::inner_join(group_map, by = "EAR_tmp") |>
+      dplyr::group_by(year, ear_label) |>
       dplyr::summarise(value = mean(value, na.rm = TRUE), .groups = "drop")
   } else {
-    plot_df <- plot_df %>%
+    plot_df <- plot_df |>
       dplyr::mutate(ear_str = as.character(EAR),
                     ear_label = if(!is.null(ear_names) && ear_str %in% names(ear_names)) ear_names[ear_str] else paste("EAR", ear_str))
   }
@@ -95,7 +98,7 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, years = c
     if(inherits(res, "try-error")) return(x) else return(res)
   }
 
-  plot_df <- plot_df %>%
+  plot_df <- plot_df |>
     dplyr::mutate(ear_label = purrr::map_chr(as.character(ear_label), ~safe_translate(.x, lang))) %>%
     dplyr::mutate(ear_label = factor(ear_label)) %>%
     dplyr::filter(!is.na(value))
@@ -136,7 +139,7 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, years = c
 #' @param var Ice/seasonal variable to plot (unquoted, e.g., \code{ice.duration}).
 #' @param EARs Vector of EAR identifiers. Defaults to \code{0}.
 #' @param groups Optional named list to aggregate EARs.
-#' @param years Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
+#' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"} or \code{"fr"}.
 #' @param fit_smooth Logical. If \code{TRUE}, adds a GAM smoother.
 #' @param method Smoothing method. Defaults to \code{"gam"}.
@@ -154,12 +157,13 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, years = c
 #' \dontrun{
 #' # Comparison of ice duration with fixed scales for better visual impact
 #' plot_gslea_ice(EA.data, ice.duration,
+#'                year_range = c(1990-2010),
 #'                EARs = c(1, 5),
 #'                facet_scales = "fixed",
 #'                col_palette = c("black", "blue"))
 #' }
 #' @export
-plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, years = c(1990, 2023),
+plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
                            lang = "en", fit_smooth = TRUE, method = "gam",
                            formula = y ~ s(x, bs = "cs", k = 15),
                            col_palette = NULL, ear_names = NULL,
@@ -187,18 +191,18 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, years = c(1990, 2
       if(grepl("first|last", var_name_raw)) " (Day of Year)" else ""
 
   all_ears_char <- if(!is.null(groups)) as.character(unlist(groups)) else as.character(EARs)
-  plot_df <- data %>%
-    dplyr::mutate(EAR_tmp = as.character(EAR)) %>%
-    dplyr::filter(year >= years[1], year <= years[2], EAR_tmp %in% all_ears_char, variable == var_name_raw)
+  plot_df <- data |>
+    dplyr::mutate(EAR_tmp = as.character(EAR)) |>
+    dplyr::filter(year >= year_range[1], year <= year_range[2], EAR_tmp %in% all_ears_char, variable == var_name_raw)
 
   if (!is.null(groups)) {
-    group_map <- stack(groups) %>% dplyr::mutate(EAR_tmp = as.character(values)) %>% dplyr::rename(ear_label = ind)
-    plot_df <- plot_df %>%
-      dplyr::inner_join(group_map, by = "EAR_tmp") %>%
-      dplyr::group_by(year, ear_label) %>%
+    group_map <- stack(groups) |> dplyr::mutate(EAR_tmp = as.character(values)) %>% dplyr::rename(ear_label = ind)
+    plot_df <- plot_df |>
+      dplyr::inner_join(group_map, by = "EAR_tmp") |>
+      dplyr::group_by(year, ear_label) |>
       dplyr::summarise(value = mean(value, na.rm = TRUE), .groups = "drop")
   } else {
-    plot_df <- plot_df %>%
+    plot_df <- plot_df |>
       dplyr::mutate(ear_str = as.character(EAR),
                     ear_label = if(!is.null(ear_names) && ear_str %in% names(ear_names)) ear_names[ear_str] else paste("EAR", ear_str))
   }
@@ -210,9 +214,9 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, years = c(1990, 2
     if(inherits(res, "try-error")) return(x) else return(res)
   }
 
-  plot_df <- plot_df %>%
+  plot_df <- plot_df |>
     dplyr::mutate(ear_label = purrr::map_chr(as.character(ear_label), ~safe_translate(.x, lang))) %>%
-    dplyr::mutate(ear_label = factor(ear_label)) %>%
+    dplyr::mutate(ear_label = factor(ear_label)) |>
     dplyr::filter(!is.na(value))
 
   final_xlab <- if(!is.null(xlab)) xlab else if(lang == "fr") "Année" else "Year"
