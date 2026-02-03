@@ -1,0 +1,24 @@
+Package: EAgraphics
+Type: Package
+Title: Graphics for Ecosystem Approaches to Fisheries Management
+Version: 0.1.0
+Authors@R: c(
+    person(
+      "Jacob", "Burbank",
+      email = "Jacob.Burbank@dfo-mpo.gc.ca",
+      role = c("aut", "cre")
+    )
+  )
+Description: This package provides user friendly functions to plot ecosystem information within an ecosystem approach to fisheries management framework.
+	It taken ecosystem information from packages such as gslea to produce high quality visualizations of the data.   
+License: Crown Copyright
+Depends:
+	ggplot2,
+	dplyr,
+	mgcv,
+Remotes:
+	Github::duplisea/gslea
+	GitHub::pbs-assess/rosettafish
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
