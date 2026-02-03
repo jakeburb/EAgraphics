@@ -69,6 +69,6 @@ plot_gslea_ice(EA.data, ice.duration,
                groups = list("Northern" = 1:4, "Southern" = 5:6),
                lang = "fr",
                facet_scales = "fixed",
-               col_palette = c("Northern" = "black", "Southern" = "blue"))
+               col_palette = c("black", "blue"))
 }
 }

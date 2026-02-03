@@ -163,7 +163,7 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
 #'                groups = list("Northern" = 1:4, "Southern" = 5:6),
 #'                lang = "fr",
 #'                facet_scales = "fixed",
-#'                col_palette = c("Northern" = "black", "Southern" = "blue"))
+#'                col_palette = c("black", "blue"))
 #' }
 #' @export
 plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
