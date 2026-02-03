@@ -7,8 +7,8 @@
 plot_gslea_ice(
   data,
   var,
-  EARs = 0,
-  years = c(1990, 2023),
+  ear_selection = 0,
+  year_range = c(1990, 2023),
   lang = "en",
   fit_smooth = TRUE,
   method = "gam",
@@ -22,13 +22,13 @@ plot_gslea_ice(
 }
 \arguments{
 \item{data}{A data frame containing gslea ecosystem data (e.g., \code{EA.data}).
-Must contain \code{year} and \code{ear} columns.}
+Must contain \code{year} and \code{EAR} columns.}
 
 \item{var}{The ice/seasonal variable to plot (unquoted, e.g., \code{ice.duration}, \code{start.10}).}
 
-\item{EARs}{Vector of EAR identifiers (e.g., \code{0, 1, 5, "10/1"}). Defaults to \code{0}.}
+\item{ear_selection}{Vector of EAR identifiers (e.g., \code{0, 1, 5, "10/1"}). Defaults to \code{0}.}
 
-\item{years}{Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
+\item{year_range}{Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
 \item{lang}{Language for labels: \code{"en"}, \code{"fr"}, or \code{"both"}.}
 
@@ -38,7 +38,7 @@ Must contain \code{year} and \code{ear} columns.}
 
 \item{formula}{The smoothing formula. Defaults to \code{y ~ s(x, bs = "cs")}.}
 
-\item{col_palette}{A character vector of colors for the EARs.}
+\item{col_palette}{A character vector of colors for the EAR.}
 
 \item{ear_names}{Optional named character vector to override EAR numbers with names.}
 
@@ -57,12 +57,12 @@ package. This function specifically handles phenological variables such as
 ice duration, ice timing, and temperature thresholds.
 }
 \details{
-This function streamlines the plotting of seasonal timing metrics of physical variables (e.g. ice and wamring/cooling). It
+This function streamlines the plotting of seasonal timing metrics of physical variables (e.g. ice and warming/cooling). It
 automatically detects and appends the correct units based on the variable name:
 \itemize{
-  \item \strong{Week of Year:} Applied to variables containing "start" or "decrease"
+  \item \strong{Week of year:} Applied to variables containing "start" or "decrease"
   (e.g., \code{start.10}, \code{decrease.12}).
-  \item \strong{Day of Year (DOY):} Applied to \code{first.ice} and \code{last.ice}.
+  \item \strong{Day of year (DOY):} Applied to \code{first.ice} and \code{last.ice}.
   \item \strong{Days:} Applied to variables containing "duration".
 }
 If multiple regions are selected, the function uses \code{facet_wrap} with
@@ -71,9 +71,9 @@ independent y-scales to accommodate different regional timing baselines.
 \examples{
 \dontrun{
 # Plotting Ice Duration for the whole Gulf
-plot_gslea_ice(EA.data, ice.duration, ears = 0)
+plot_gslea_ice(EA.data, ice.duration, ear_selection = 0)
 
-# Comparing warming onset (Week of Year) across regions
-plot_gslea_ice(EA.data, start.10, ears = c(1, 2, 3), years = c(2000, 2023))
+# Comparing warming onset (Week of year) across regions
+plot_gslea_ice(EA.data, start.10, ear_selection = c(1, 2, 3), year_range = c(2000, 2023))
 }
 }

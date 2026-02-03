@@ -7,8 +7,8 @@
 plot_gslea_temp(
   data,
   var,
-  EARs = 0,
-  years = c(1990, 2023),
+  ear_selection = 0,
+  year_range = c(1990, 2023),
   lang = "en",
   fit_smooth = TRUE,
   method = "gam",
@@ -22,13 +22,13 @@ plot_gslea_temp(
 }
 \arguments{
 \item{data}{A data frame containing gslea ecosystem data (e.g., \code{EA.data}).
-Must contain \code{year} and \code{ear} columns.}
+Must contain \code{year} and \code{EAR} columns.}
 
 \item{var}{The temperature variable to plot. Can be unquoted (e.g., \code{sst.month10}).}
 
-\item{EARs}{Vector of EAR identifiers (e.g., \code{0, 1, 2, "10/1"}). Defaults to \code{0}.}
+\item{ear_selection}{Vector of EAR identifiers (e.g., \code{0, 1, 2, "10/1"}). Defaults to \code{0}.}
 
-\item{years}{Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
+\item{year_range}{Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
 \item{lang}{Language for labels: \code{"en"}, \code{"fr"}, or \code{"both"}.}
 
@@ -38,7 +38,7 @@ Must contain \code{year} and \code{ear} columns.}
 
 \item{formula}{The smoothing formula. Defaults to \code{y ~ s(x, bs = "cs")}.}
 
-\item{col_palette}{A character vector of colors for the EARs.}
+\item{col_palette}{A character vector of colors for the EAR.}
 
 \item{ear_names}{Optional named character vector to override EAR numbers with
 names (e.g., \code{c("0" = "Entire Gulf")}).}
@@ -69,20 +69,20 @@ common data preparation tasks:
   more than 5 data points, a trend line is added. By default, this uses a
   Generalized Additive Model (GAM) with a cubic regression spline to
   capture non-linear ecosystem shifts.
-  \item \strong{Faceting:} If multiple EARs are selected, the function
+  \item \strong{Faceting:} If multiple EAR are selected, the function
   utilizes \code{facet_wrap} to create a side-by-side comparison with
   independent y-axes, allowing for clear visualization of regional differences.
 }
 }
 \examples{
 \dontrun{
-# Plotting Magdalen Shallows (EAR 5)  for the 2000 - 2020
-plot_gslea_temp(EA.data, sst.month10, ears = 5, years = c(2000, 2020))
+# Plotting Magdalen Shallows (EAR 5) for the 2000 - 2020
+plot_gslea_temp(EA.data, sst.month10, ear_selection = 5, year_range = c(2000, 2020))
 
 # Comparison with custom names and French labels
-plot_gslea_temp(EA.data, bottom.temp,
-               ears = c(1, 2, 3),
-               lang = "fr",
-               ear_names = c("1" = "North Western", "2" = "North Eastern", "3" = "Centre"))
+plot_gslea_temp(EA.data, t.deep,
+                ear_selection = c(1, 2, 3),
+                lang = "fr",
+                ear_names = c("1" = "North Western", "2" = "North Eastern", "3" = "Centre"))
 }
 }

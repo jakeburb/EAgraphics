@@ -2,6 +2,7 @@
 
 export(plot_gslea_ice)
 export(plot_gslea_temp)
+importFrom(dplyr,.data)
 importFrom(dplyr,filter)
 importFrom(dplyr,mutate)
 importFrom(dplyr,select)

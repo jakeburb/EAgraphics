@@ -1,18 +1,6 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   https://r-pkgs.org
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Install Package:           'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
-
+# Functions to make graphs and tables for the Gulf of St. Lawrence physical
+# and biological environment. Using data from gslea which is a dependency
+# of this package.
 
 #' Plot Temperature data from gslea by Ecosystem Approach Region (EAR)
 #'
@@ -22,15 +10,15 @@
 #' and bilingual labeling via \code{rosettafish}.
 #'
 #' @param data A data frame containing gslea ecosystem data (e.g., \code{EA.data}).
-#' Must contain \code{year} and \code{ear} columns.
+#' Must contain \code{year} and \code{EAR} columns.
 #' @param var The temperature variable to plot. Can be unquoted (e.g., \code{sst.month10}).
-#' @param EARs Vector of EAR identifiers (e.g., \code{0, 1, 2, "10/1"}). Defaults to \code{0}.
-#' @param years Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
+#' @param ear_selection Vector of EAR identifiers (e.g., \code{0, 1, 2, "10/1"}). Defaults to \code{0}.
+#' @param year_range Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"}, \code{"fr"}, or \code{"both"}.
 #' @param fit_smooth Logical. If \code{TRUE}, fits a smoother (GAM by default).
 #' @param method The smoothing method (e.g., \code{"gam"}, \code{"lm"}).
 #' @param formula The smoothing formula. Defaults to \code{y ~ s(x, bs = "cs")}.
-#' @param col_palette A character vector of colors for the EARs.
+#' @param col_palette A character vector of colors for the EAR.
 #' @param ear_names Optional named character vector to override EAR numbers with
 #' names (e.g., \code{c("0" = "Entire Gulf")}).
 #' @param xlab Optional custom x-axis label.
@@ -49,7 +37,7 @@
 #'   more than 5 data points, a trend line is added. By default, this uses a
 #'   Generalized Additive Model (GAM) with a cubic regression spline to
 #'   capture non-linear ecosystem shifts.
-#'   \item \strong{Faceting:} If multiple EARs are selected, the function
+#'   \item \strong{Faceting:} If multiple EAR are selected, the function
 #'   utilizes \code{facet_wrap} to create a side-by-side comparison with
 #'   independent y-axes, allowing for clear visualization of regional differences.
 #' }
@@ -57,27 +45,27 @@
 #' @return A \code{ggplot} object.
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_bw theme element_blank facet_wrap scale_color_manual
-#' @importFrom dplyr filter select mutate
+#' @importFrom dplyr filter select mutate .data
 #' @importFrom rosettafish en2fr
 #' @importFrom rlang enquo as_label !!
 #' @importFrom mgcv s
 #'
 #' @examples
 #' \dontrun{
-#' # Plotting Magdalen Shallows (EAR 5)  for the 2000 - 2020
-#' plot_gslea_temp(EA.data, sst.month10, ears = 5, years = c(2000, 2020))
+#' # Plotting Magdalen Shallows (EAR 5) for the 2000 - 2020
+#' plot_gslea_temp(EA.data, sst.month10, ear_selection = 5, year_range = c(2000, 2020))
 #'
 #' # Comparison with custom names and French labels
-#' plot_gslea_temp(EA.data, bottom.temp,
-#'                ears = c(1, 2, 3),
-#'                lang = "fr",
-#'                ear_names = c("1" = "North Western", "2" = "North Eastern", "3" = "Centre"))
+#' plot_gslea_temp(EA.data, t.deep,
+#'                 ear_selection = c(1, 2, 3),
+#'                 lang = "fr",
+#'                 ear_names = c("1" = "North Western", "2" = "North Eastern", "3" = "Centre"))
 #' }
 #' @export
 plot_gslea_temp <- function(data,
                             var,
-                            EARs = 0,
-                            years = c(1990, 2023),
+                            ear_selection = 0,
+                            year_range = c(1990, 2023),
                             lang = "en",
                             fit_smooth = TRUE,
                             method = "gam",
@@ -112,78 +100,60 @@ plot_gslea_temp <- function(data,
 
   base_label <- if (var_name_raw %in% names(lookup)) lookup[var_name_raw] else var_name_raw
 
-  # 3. Data Processing (Updated for LONG format and capitalized column names)
-  plot_df <- data %>%
-    dplyr::filter(year >= years[1],
-                  year <= years[2],
-                  EAR %in% EARs,
-                  variable == var_name_raw) %>%
-    dplyr::mutate(ear_str = as.character(EAR))
+  # 3. Data Processing (Using pronouns to avoid scoping errors)
+  plot_df <- data |>
+    dplyr::filter(.data$year >= year_range[1],
+                  .data$year <= year_range[2],
+                  .data$EAR %in% ear_selection,
+                  .data$variable == var_name_raw) |>
+    dplyr::mutate(ear_str = as.character(.data$EAR))
+
+  if (nrow(plot_df) == 0) stop("No data found for the selected EAR, year_range, and variable.")
 
   # Regional Naming
   if (!is.null(ear_names)) {
-    plot_df <- plot_df %>%
-      dplyr::mutate(ear_label = ifelse(ear_str %in% names(ear_names),
-                                       ear_names[ear_str],
-                                       paste("EAR", ear_str)))
+    plot_df <- plot_df |>
+      dplyr::mutate(ear_label = ifelse(.data$ear_str %in% names(ear_names),
+                                       ear_names[.data$ear_str],
+                                       paste("EAR", .data$ear_str)))
   } else {
-    plot_df <- plot_df %>%
-      dplyr::mutate(ear_label = paste("EAR", ear_str))
+    plot_df <- plot_df |>
+      dplyr::mutate(ear_label = paste("EAR", .data$ear_str))
   }
 
-  plot_df <- plot_df %>%
-    dplyr::mutate(ear_label = factor(ear_label)) %>%
-    dplyr::select(year, ear_label, value) %>%
-    dplyr::filter(!is.na(value))
+  plot_df <- plot_df |>
+    dplyr::mutate(ear_label = factor(.data$ear_label)) |>
+    dplyr::select(.data$year, .data$ear_label, .data$value) |>
+    dplyr::filter(!is.na(.data$value))
 
   # 4. Bilingual Labeling
-  # If lang is "fr" or "both", we translate.
-  # Note: rosettafish::en2fr simply takes the string.
   should_translate <- (lang %in% c("fr", "both"))
-
   translated_label <- if(should_translate) {
-    rosettafish::en2fr(base_label)
+    rosettafish::en2fr(base_label, nomatch = NULL)
   } else {
     base_label
   }
 
-  # Append units
   if (grepl("sst|temp|^t\\.|tmax", var_name_raw, ignore.case = TRUE)) {
     translated_label <- paste0(translated_label, " (°C)")
   }
 
-  # Translate Axis Titles
-  final_xlab <- if(!is.null(xlab)) {
-    xlab
-  } else if(should_translate) {
-    rosettafish::en2fr("Year")
-  } else {
-    "Year"
-  }
-
+  final_xlab <- if(!is.null(xlab)) xlab else if(should_translate) rosettafish::en2fr("Year", nomatch = NULL) else "Year"
   final_ylab <- if(is.null(ylab)) translated_label else ylab
 
   # 5. Build Plot
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$year, y = .data$value, color = .data$ear_label)) +
     ggplot2::geom_point(size = 2, alpha = 0.7) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
 
-  if (!is.null(col_palette)) {
-    p <- p + ggplot2::scale_color_manual(values = col_palette)
-  }
+  if (!is.null(col_palette)) p <- p + ggplot2::scale_color_manual(values = col_palette)
 
   # 6. Trend Fitting
   if (fit_smooth && nrow(plot_df) > 5) {
-    p <- p + ggplot2::geom_smooth(
-      method = method,
-      formula = formula,
-      color = "black",
-      se = TRUE,
-      fill = "grey80",
-      alpha = 0.4
-    )
+    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black",
+                                  se = TRUE, fill = "grey80", alpha = 0.4)
   }
 
   # 7. Faceting
@@ -204,27 +174,27 @@ plot_gslea_temp <- function(data,
 #' ice duration, ice timing, and temperature thresholds.
 #'
 #' @param data A data frame containing gslea ecosystem data (e.g., \code{EA.data}).
-#' Must contain \code{year} and \code{ear} columns.
+#' Must contain \code{year} and \code{EAR} columns.
 #' @param var The ice/seasonal variable to plot (unquoted, e.g., \code{ice.duration}, \code{start.10}).
-#' @param EARs Vector of EAR identifiers (e.g., \code{0, 1, 5, "10/1"}). Defaults to \code{0}.
-#' @param years Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
+#' @param ear_selection Vector of EAR identifiers (e.g., \code{0, 1, 5, "10/1"}). Defaults to \code{0}.
+#' @param year_range Numeric vector of length 2: \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"}, \code{"fr"}, or \code{"both"}.
 #' @param fit_smooth Logical. If \code{TRUE}, fits a smoother (GAM by default).
 #' @param method The smoothing method (e.g., \code{"gam"}, \code{"lm"}).
 #' @param formula The smoothing formula. Defaults to \code{y ~ s(x, bs = "cs")}.
-#' @param col_palette A character vector of colors for the EARs.
+#' @param col_palette A character vector of colors for the EAR.
 #' @param ear_names Optional named character vector to override EAR numbers with names.
 #' @param xlab Optional custom x-axis label.
 #' @param ylab Optional custom y-axis label.
 #' @param custom_theme A \code{ggplot2} theme object. Defaults to \code{theme_bw()}.
 #'
 #' @details
-#' This function streamlines the plotting of seasonal timing metrics of physical variables (e.g. ice and wamring/cooling). It
+#' This function streamlines the plotting of seasonal timing metrics of physical variables (e.g. ice and warming/cooling). It
 #' automatically detects and appends the correct units based on the variable name:
 #' \itemize{
-#'   \item \strong{Week of Year:} Applied to variables containing "start" or "decrease"
+#'   \item \strong{Week of year:} Applied to variables containing "start" or "decrease"
 #'   (e.g., \code{start.10}, \code{decrease.12}).
-#'   \item \strong{Day of Year (DOY):} Applied to \code{first.ice} and \code{last.ice}.
+#'   \item \strong{Day of year (DOY):} Applied to \code{first.ice} and \code{last.ice}.
 #'   \item \strong{Days:} Applied to variables containing "duration".
 #' }
 #' If multiple regions are selected, the function uses \code{facet_wrap} with
@@ -233,7 +203,7 @@ plot_gslea_temp <- function(data,
 #' @return A \code{ggplot} object.
 #'
 #' @importFrom ggplot2 ggplot aes geom_point geom_smooth labs theme_bw theme element_blank facet_wrap scale_color_manual
-#' @importFrom dplyr filter select mutate
+#' @importFrom dplyr filter select mutate .data
 #' @importFrom rosettafish en2fr
 #' @importFrom rlang enquo as_label !!
 #' @importFrom mgcv s
@@ -241,16 +211,15 @@ plot_gslea_temp <- function(data,
 #' @examples
 #' \dontrun{
 #' # Plotting Ice Duration for the whole Gulf
-#' plot_gslea_ice(EA.data, ice.duration, ears = 0)
+#' plot_gslea_ice(EA.data, ice.duration, ear_selection = 1)
 #'
-#' # Comparing warming onset (Week of Year) across regions
-#' plot_gslea_ice(EA.data, start.10, ears = c(1, 2, 3), years = c(2000, 2023))
-#' }
+#' # Comparing warming onset (Week of year) across regions
+#' plot_gslea_ice(EA.data, start.10, ear_selection = c(1, 2, 3), year_range = c(2000, 2023))
 #' @export
 plot_gslea_ice <- function(data,
                            var,
-                           EARs = 0,
-                           years = c(1990, 2023),
+                           ear_selection = 0,
+                           year_range = c(1990, 2023),
                            lang = "en",
                            fit_smooth = TRUE,
                            method = "gam",
@@ -279,68 +248,63 @@ plot_gslea_ice <- function(data,
 
   base_label <- if (var_name_raw %in% names(lookup)) lookup[var_name_raw] else var_name_raw
 
-  # 3. Unit Detection (Specific to Ice/Phenology)
+  # 3. Unit Detection
   unit <- ""
   if (grepl("start|decrease", var_name_raw, ignore.case = TRUE)) {
-    unit <- " (Week of Year)"
+    unit <- " (Week of year)"
   } else if (grepl("duration", var_name_raw, ignore.case = TRUE)) {
     unit <- " (Days)"
-  } else if (grepl("first|last", var_name_raw, ignore.case = TRUE)) {
-    unit <- " (Day of Year)"
-  } else if (grepl("max", var_name_raw, ignore.case = TRUE)) {
-    unit <- " (Day of Year)"
+  } else if (grepl("first|last|max", var_name_raw, ignore.case = TRUE)) {
+    unit <- " (Day of year)"
   }
 
-  # 4. Data Processing (Long Format + Capital EAR)
-  plot_df <- data %>%
-    dplyr::filter(year >= years[1],
-                  year <= years[2],
-                  EAR %in% EARs,
-                  variable == var_name_raw) %>%
-    dplyr::mutate(ear_str = as.character(EAR))
+  # 4. Data Processing (Using .data pronouns)
+  plot_df <- data |>
+    dplyr::filter(.data$year >= year_range[1],
+                  .data$year <= year_range[2],
+                  .data$EAR %in% ear_selection,
+                  .data$variable == var_name_raw) |>
+    dplyr::mutate(ear_str = as.character(.data$EAR))
 
-  # Regional Naming logic
+  if (nrow(plot_df) == 0) stop("No data found for the selected EAR, year_range, and variable.")
+
   if (!is.null(ear_names)) {
-    plot_df <- plot_df %>%
-      dplyr::mutate(ear_label = ifelse(ear_str %in% names(ear_names),
-                                       ear_names[ear_str],
-                                       paste("EAR", ear_str)))
+    plot_df <- plot_df |>
+      dplyr::mutate(ear_label = ifelse(.data$ear_str %in% names(ear_names),
+                                       ear_names[.data$ear_str],
+                                       paste("EAR", .data$ear_str)))
   } else {
-    plot_df <- plot_df %>%
-      dplyr::mutate(ear_label = paste("EAR", ear_str))
+    plot_df <- plot_df |>
+      dplyr::mutate(ear_label = paste("EAR", .data$ear_str))
   }
 
-  plot_df <- plot_df %>%
-    dplyr::mutate(ear_label = factor(ear_label)) %>%
-    dplyr::select(year, ear_label, value) %>%
-    dplyr::filter(!is.na(value))
+  plot_df <- plot_df |>
+    dplyr::mutate(ear_label = factor(.data$ear_label)) |>
+    dplyr::select(.data$year, .data$ear_label, .data$value) |>
+    dplyr::filter(!is.na(.data$value))
 
   # 5. Multilingual Labeling
-  translated_label <- rosettafish::en2fr(base_label, lang = lang, translate = (lang != "en"))
+  should_translate <- (lang != "en")
+  translated_label <- if(should_translate) rosettafish::en2fr(base_label, nomatch = NULL) else base_label
+
   final_ylab <- if(is.null(ylab)) paste0(translated_label, unit) else ylab
-  final_xlab <- if(is.null(xlab)) rosettafish::en2fr("Year", lang = lang, translate = (lang != "en")) else xlab
+  final_xlab <- if(is.null(xlab)) {
+    if(should_translate) rosettafish::en2fr("Year", nomatch = NULL) else "Year"
+  } else xlab
 
   # 6. Build Plot
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = .data$year, y = .data$value, color = .data$ear_label)) +
     ggplot2::geom_point(size = 2, alpha = 0.7) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
 
-  if (!is.null(col_palette)) {
-    p <- p + ggplot2::scale_color_manual(values = col_palette)
-  }
+  if (!is.null(col_palette)) p <- p + ggplot2::scale_color_manual(values = col_palette)
 
   # 7. Trend Fitting
   if (fit_smooth && nrow(plot_df) > 5) {
-    p <- p + ggplot2::geom_smooth(
-      method = method,
-      formula = formula,
-      color = "black",
-      se = TRUE,
-      fill = "grey80",
-      alpha = 0.4
-    )
+    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black",
+                                  se = TRUE, fill = "grey80", alpha = 0.4)
   }
 
   # 8. Faceting
