@@ -10,7 +10,19 @@ Authors@R: c(
     )
   )
 Description: This package provides user friendly functions to plot ecosystem information within an ecosystem approach to fisheries management framework.
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 	It taken ecosystem information from packages such as gslea to produce high quality visualizations of the data.   
+=======
+        	It takes ecosystem information from packages such as gslea to produce high quality visualizations of the data.   
+>>>>>>> Stashed changes
+=======
+        	It takes ecosystem information from packages such as gslea to produce high quality visualizations of the data.   
+>>>>>>> Stashed changes
+=======
+        	It takes ecosystem information from packages such as gslea to produce high quality visualizations of the data.   
+>>>>>>> Stashed changes
 License: Crown Copyright
 Depends:
     ggplot2,

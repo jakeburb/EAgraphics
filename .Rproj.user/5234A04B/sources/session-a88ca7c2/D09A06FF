@@ -3,7 +3,7 @@
     "path": "~/GitHub/EAgraphics/R/FunctionsN.R",
     "project_path": "R/FunctionsN.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "1376062957",
     "contents": "",
     "dirty": false,
     "created": 1770124582463.0,
@@ -13,15 +13,31 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "242,0",
-        "scrollLine": "214"
+        "cursorPosition": "40,12",
+        "scrollLine": "19"
     },
     "folds": "",
-    "lastKnownWriteTime": 1770127675,
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+    "lastKnownWriteTime": 1770135921,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1770127675867,
+    "last_content_update": 1770135921,
+=======
+    "lastKnownWriteTime": 1770135751,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1770135751445,
+>>>>>>> Stashed changes
+=======
+    "lastKnownWriteTime": 1770135751,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1770135751445,
+>>>>>>> Stashed changes
     "read_only": false,
     "read_only_alternatives": []
 }
