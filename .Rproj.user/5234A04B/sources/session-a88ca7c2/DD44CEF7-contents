@@ -74,7 +74,7 @@
 #'                ear_names = c("1" = "North Western", "2" = "North Eastern", "3" = "Centre"))
 #' }
 #' @export
-plot_gslea_temp <- function(data,
+plot_gslea_temp_Old <- function(data,
                             var,
                             EARs = 0,
                             years = c(1990, 2023),
@@ -165,7 +165,7 @@ plot_gslea_temp <- function(data,
 
   # 5. Build Plot
   p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
-    ggplot2::geom_point(size = 2, alpha = 0.7) +
+    ggplot2::geom_point(size = 2, alpha = 1) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
@@ -247,7 +247,7 @@ plot_gslea_temp <- function(data,
 #' plot_gslea_ice(EA.data, start.10, ears = c(1, 2, 3), years = c(2000, 2023))
 #' }
 #' @export
-plot_gslea_ice <- function(data,
+plot_gslea_ice_Old <- function(data,
                            var,
                            EARs = 0,
                            years = c(1990, 2023),
@@ -322,7 +322,7 @@ plot_gslea_ice <- function(data,
 
   # 6. Build Plot
   p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
-    ggplot2::geom_point(size = 2, alpha = 0.7) +
+    ggplot2::geom_point(size = 2, alpha = 1) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
     ggplot2::theme(panel.grid.minor = ggplot2::element_blank())

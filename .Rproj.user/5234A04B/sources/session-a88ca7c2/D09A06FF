@@ -1,26 +1,27 @@
 {
-    "id": "DD44CEF7",
-    "path": "~/GitHub/EAgraphics/R/Functions.R",
-    "project_path": "R/Functions.R",
+    "id": "D09A06FF",
+    "path": "~/GitHub/EAgraphics/R/FunctionsN.R",
+    "project_path": "R/FunctionsN.R",
     "type": "r_source",
     "hash": "0",
     "contents": "",
     "dirty": false,
-    "created": 1770080112576.0,
+    "created": 1770124582463.0,
     "source_on_save": false,
-    "relative_order": 1,
+    "relative_order": 2,
     "properties": {
+        "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "162,0",
-        "scrollLine": "200"
+        "cursorPosition": "242,0",
+        "scrollLine": "214"
     },
     "folds": "",
-    "lastKnownWriteTime": 1770090394,
+    "lastKnownWriteTime": 1770127675,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1770090394086,
+    "last_content_update": 1770127675867,
     "read_only": false,
     "read_only_alternatives": []
 }
