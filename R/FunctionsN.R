@@ -25,6 +25,18 @@
 #' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
 #'
 #' @return A \code{ggplot} object.
+#' @examples
+#' \dontrun{
+#' # Compare surface warming in broad regions with custom colors and fixed scales
+#' my_regions <- list("Northern GSL" = 1:4, "Southern GSL" = c(5, 6, 50))
+#'
+#' plot_gslea_temperature(EA.data, sst.month10,
+#'                        groups = my_regions,
+#'                        year_range = c(2000, 2023),
+#'                        facet_scales = "fixed",
+#'                        col_palette = c("Northern GSL" = "royalblue",
+#'                                        "Southern GSL" = "firebrick"))
+#' }
 #' @export
 plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
                                    lang = "en", fit_smooth = TRUE, method = "gam",

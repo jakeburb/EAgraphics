@@ -9,7 +9,7 @@ plot_gslea_ice(
   var,
   EARs = 0,
   groups = NULL,
-  years = c(1990, 2023),
+  year_range = c(1990, 2023),
   lang = "en",
   fit_smooth = TRUE,
   method = "gam",
@@ -32,7 +32,7 @@ plot_gslea_ice(
 
 \item{groups}{Optional named list to aggregate EARs.}
 
-\item{years}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
+\item{year_range}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
 \item{lang}{Language for labels: \code{"en"} or \code{"fr"}.}
 
@@ -63,10 +63,12 @@ Supports individual EARs or custom aggregated groups with controllable scales.
 }
 \examples{
 \dontrun{
-# Comparison of ice duration with fixed scales for better visual impact
+# Compare ice duration between Northern and Southern groups
 plot_gslea_ice(EA.data, ice.duration,
-               EARs = c(1, 5),
+               year_range = c(2000, 2020),
+               groups = list("Northern" = 1:4, "Southern" = 5:6),
+               lang = "fr",
                facet_scales = "fixed",
-               col_palette = c("black", "blue"))
+               col_palette = c("Northern" = "black", "Southern" = "blue"))
 }
 }

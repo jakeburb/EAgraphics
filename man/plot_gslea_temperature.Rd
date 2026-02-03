@@ -28,9 +28,9 @@ plot_gslea_temperature(
 
 \item{var}{Temperature variable to plot (unquoted, e.g., \code{sst.month10}).}
 
-\item{EARs}{Vector of EAR identifiers. Defaults to \code{0} (Entire Gulf).}
+\item{EARs}{Vector of EAR identifiers. Defaults to \code{0}.}
 
-\item{groups}{Optional named list to aggregate EARs (e.g., \code{list("Northern" = 1:4)}).}
+\item{groups}{Optional named list to aggregate EARs.}
 
 \item{year_range}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
@@ -59,22 +59,18 @@ A \code{ggplot} object.
 }
 \description{
 Visualizes temperature data from the gslea package using long-format data.
-Supports individual EARs or custom aggregated groups with automatic
-translation and unit detection.
-}
-\details{
-This function streamlines GSL temperature visualizations. It detects
-temperature metrics to append "(°C)" and uses an internal bilingual
-dictionary. Custom groups provided via \code{groups} are aggregated by annual
-mean and translated.
+Restored with full bilingual dictionary and native R pipes.
 }
 \examples{
 \dontrun{
-# Compare regions with a fixed Y-axis scale and custom colors
-my_regions <- list("Northern" = 1:4, "Southern" = c(5, 6, 50))
-plot_gslea_temperature(EA.data, sst.month10, year_range = c(1960, 2015),
-                      groups = my_regions,
-                      facet_scales = "fixed", lang = 'fr',
-                      col_palette = c("Nord du GSL" = "royalblue", "Sud du GSL" = "royalblue"))
+# Compare surface warming in broad regions with custom colors and fixed scales
+my_regions <- list("Northern GSL" = 1:4, "Southern GSL" = c(5, 6, 50))
+
+plot_gslea_temperature(EA.data, sst.month10,
+                       groups = my_regions,
+                       year_range = c(2000, 2023),
+                       facet_scales = "fixed",
+                       col_palette = c("Northern GSL" = "royalblue",
+                                       "Southern GSL" = "firebrick"))
 }
 }
