@@ -24,38 +24,59 @@ plot_gslea_plankton(
 )
 }
 \arguments{
-\item{data}{Long-format data frame.}
+\item{data}{Long-format data frame containing \code{year}, \code{EAR}, \code{variable}, and \code{value}.}
 
-\item{var}{Planktonic variable (unquoted, e.g., \code{calanus.finmarchicus.annual}).}
+\item{var}{Planktonic variable to plot (unquoted, e.g., \code{calanus.finmarchicus.annual}).}
 
-\item{EARs}{Vector of EAR identifiers. Defaults to \code{0}.}
+\item{EARs}{Vector of EAR identifiers to include. Defaults to \code{0} (Entire Gulf).}
 
-\item{groups}{Optional named list to aggregate EARs.}
+\item{groups}{Optional named list to aggregate EARs (e.g., \code{list("Northern" = 1:4)}).}
 
-\item{year_range}{Numeric vector \code{c(start, end)}.}
+\item{year_range}{Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.}
 
-\item{lang}{Language: \code{"en"} or \code{"fr"}.}
+\item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
+
+\item{fit_smooth}{Logical. If \code{TRUE}, adds a GAM smoother to the plot.}
+
+\item{method}{Smoothing method to use. Defaults to \code{"gam"}.}
+
+\item{formula}{Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.}
+
+\item{col_palette}{Optional character vector of colors for the regions/groups.}
+
+\item{ear_names}{Optional named vector to override EAR numbers with custom names.}
+
+\item{xlab, ylab}{Optional strings to override default axis labels.}
+
+\item{base_size}{Base font size for the ggplot2 theme. Defaults to \code{14}.}
+
+\item{facet_scales}{Character. Control facet scales: \code{"free_y"} (default) or \code{"fixed"}.}
+
+\item{custom_theme}{A ggplot2 theme object. Defaults to \code{theme_bw()}.}
+}
+\value{
+A \code{ggplot} object.
 }
 \description{
-Visualizes planktonic variables from the gslea package. Supports
-extensive bilingual labels for Calanus species, chlorophyll, and biomass.
+Visualizes planktonic variables (phytoplankton and zooplankton) from the gslea
+package. This function handles complex units (e.g., 10³ ind m⁻², mg chla m⁻²)
+and provides bilingual labels for species and seasonal subsets.
 }
 \examples{
 \dontrun{
-# 1. Simple plot for a single EAR
+# 1. Simple plot for a specific EAR
 plot_gslea_plankton(EA.data, dw2_t.annual, EARs = 5)
 
 # 2. Compare Calanus abundance between regions with custom colors
-# Note: 'calanus.finmarchicus.annual' is passed without quotes
 region_list <- list("Northern GSL" = 1:4, "Southern GSL" = c(5, 6, 50))
 
 plot_gslea_plankton(data = EA.data,
-                   var = calanus.finmarchicus.annual,
-                   groups = region_list,
-                   year_range = c(2005, 2023),
-                   lang = "en",
-                   col_palette = c("Northern GSL" = "darkgreen",
-                                   "Southern GSL" = "orange"))
+                    var = calanus.finmarchicus.annual,
+                    groups = region_list,
+                    year_range = c(2005, 2023),
+                    lang = "en",
+                    col_palette = c("Northern GSL" = "darkgreen",
+                                    "Southern GSL" = "orange"))
 
 # 3. Plot phytoplankton bloom start date in French
 plot_gslea_plankton(EA.data, start, EARs = 1:8, lang = "fr")
