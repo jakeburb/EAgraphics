@@ -602,10 +602,7 @@ plot_anomaly <- function(data,
   all_years <- sort(unique(c(data$year, composite_data$year)))
   x_lims <- if (!is.null(year_range)) year_range else range(all_years, na.rm = TRUE)
 
-  # NEW: Separate labels from gridlines
-  # Labels stay on the year
   label_breaks <- seq(x_lims[1], x_lims[2], by = x_breaks_interval)
-  # Gridlines go BETWEEN the years (at .5)
   grid_breaks <- seq(x_lims[1] - 0.5, x_lims[2] + 0.5, by = 1)
 
   data <- data |> dplyr::filter(year >= x_lims[1], year <= x_lims[2])
@@ -640,25 +637,24 @@ plot_anomaly <- function(data,
   p_top <- p_top +
     ggplot2::theme_bw(base_size = base_size) +
     ggplot2::coord_cartesian(xlim = c(x_lims[1]-0.6, x_lims[2]+0.6), clip = "off") +
-    # Use minor_breaks for the actual gridlines and breaks for the labels
     ggplot2::scale_x_continuous(expand = c(0,0),
                                 breaks = label_breaks,
                                 minor_breaks = grid_breaks) +
     ggplot2::scale_y_continuous(breaks = y_breaks) +
-    ggplot2::labs(y = final_y_label, x = terms[[lang]][["yr"]]) +
+    ggplot2::labs(y = final_y_label) +
     ggplot2::theme(
-      panel.grid.major.x = ggplot2::element_blank(), # Remove lines through bars
-      panel.grid.minor.x = ggplot2::element_line(color = "grey92") # Put lines BETWEEN bars
+      axis.title.x = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_blank(),
+      axis.ticks.x = ggplot2::element_blank(),
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.minor.x = ggplot2::element_line(color = "grey92"),
+      plot.margin = ggplot2::margin(t = 5, r = 10, b = 0, l = 5)
     )
 
   if (!is.null(colors)) p_top <- p_top + ggplot2::scale_fill_manual(values = colors)
 
   # 3. Bottom Plot (Scorecard)
   if (show_scorecard && !rlang::quo_is_null(comp_val_enquo)) {
-    p_top <- p_top + ggplot2::theme(axis.title.x = ggplot2::element_blank(),
-                                    axis.text.x = ggplot2::element_blank(),
-                                    axis.ticks.x = ggplot2::element_blank(),
-                                    plot.margin = ggplot2::margin(t = 5, r = 10, b = 0, l = 5))
 
     score_palette <- c(grDevices::colorRampPalette(c("black","blue", "white"))(10),
                        grDevices::colorRampPalette(c("white", "red", "#5D0000"))(7))
@@ -681,14 +677,23 @@ plot_anomaly <- function(data,
       ggplot2::scale_fill_manual(values = score_palette, drop = FALSE, na.value = "grey80") +
       ggplot2::coord_cartesian(xlim = c(x_lims[1]-0.6, x_lims[2]+0.6), clip = "off") +
       ggplot2::scale_x_continuous(expand = c(0,0), breaks = label_breaks) +
+      ggplot2::labs(x = terms[[lang]][["yr"]]) + # Added X Label here
       ggplot2::theme_void(base_size = base_size) +
-      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, size = base_size * 0.8),
-                     legend.position = "none",
-                     plot.margin = ggplot2::margin(t = -1, r = 10, b = 5, l = 5))
+      ggplot2::theme(
+        axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, size = base_size * 0.8),
+        axis.title.x = ggplot2::element_text(size = base_size, margin = ggplot2::margin(t = 10)), # Visible X label
+        legend.position = "none",
+        plot.margin = ggplot2::margin(t = -1, r = 10, b = 5, l = 5)
+      )
 
-    final_plot <- cowplot::plot_grid(p_top, p_bot, ncol = 1, rel_heights = c(10, 2), align = "v", axis = "lr")
+    final_plot <- cowplot::plot_grid(p_top, p_bot, ncol = 1, rel_heights = c(10, 2.2), align = "v", axis = "lr")
   } else {
-    final_plot <- p_top
+    # If no scorecard, restore the X axis to the top plot
+    final_plot <- p_top + ggplot2::theme(
+      axis.title.x = ggplot2::element_text(),
+      axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
+      axis.ticks.x = ggplot2::element_line()
+    ) + ggplot2::labs(x = terms[[lang]][["yr"]])
   }
 
   return(final_plot)
