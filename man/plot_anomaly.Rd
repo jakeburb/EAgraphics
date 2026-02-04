@@ -13,6 +13,7 @@ plot_anomaly(
   show_composite = TRUE,
   show_scorecard = TRUE,
   year_range = NULL,
+  x_breaks_interval = 1,
   colors = NULL,
   lang = "en",
   y_label = NULL,
@@ -25,7 +26,7 @@ plot_anomaly(
 
 \item{value_col}{Unquoted name of the anomaly column for the bars.}
 
-\item{var_col}{Optional unquoted name of the grouping column (e.g., \code{Depth}).}
+\item{var_col}{Optional unquoted name of the grouping column for stacked bars.}
 
 \item{composite_data}{Optional data frame for the line and scorecard.}
 
@@ -37,6 +38,8 @@ plot_anomaly(
 
 \item{year_range}{Numeric vector \code{c(start, end)}.}
 
+\item{x_breaks_interval}{Numeric. Interval for year labels (e.g., 2 for every other year). Defaults to 1.}
+
 \item{colors}{Optional named vector for bar colors.}
 
 \item{lang}{Language: \code{"en"} (default) or \code{"fr"}.}
@@ -45,37 +48,35 @@ plot_anomaly(
 
 \item{y_breaks}{Optional numeric vector for y-axis tick marks.}
 
-\item{base_size}{Numeric. Base font size for scaling all plot text. Defaults to 11.}
+\item{base_size}{Numeric. Base font size for scaling text. Defaults to 11.}
 }
 \value{
 A combined plot object (cowplot).
 }
 \description{
 Creates a publication-quality anomaly plot with a standardized color scorecard.
-Features include bilingual support, automated alignment, and y-axis customization.
+Handles extreme values via clamping and allows for customizable X-axis labeling intervals.
 }
 \examples{
 \dontrun{
-# Example 1: Standard SST Anomaly with Scorecard
+# Example 1: Standard SST Anomaly for EAR 5 (Southern Gulf)
 sst_anom <- EA.data |>
   dplyr::filter(variable == "sst.month10", EAR == 5) |>
   calc_anomaly(baseline_range = c(1991, 2020))
 
-plot_anomaly(sst_anom, value_col = anomaly, comp_value_col = anomaly)
+plot_anomaly(sst_anom, value_col = anomaly, comp_value_col = anomaly,
+             y_label = "SST Anomaly (°C)")
 
-# Example 2: Comparison (One region as bars, another as composite line)
-comp_data <- EA.data |>
-  dplyr::filter(variable == "t.deep", EAR \%in\% c(1, 5)) |>
-  dplyr::group_by(EAR) |>
-  calc_anomaly(baseline_range = c(1991, 2020))
 
-plot_anomaly(data = subset(comp_data, EAR == 5),
+# Example 2: Simple bar-only look (e.g., for biological indices)
+calanus_anom <- EA.data |>
+  dplyr::filter(variable == "calanus.finmarchicus.annual", EAR == 5) |>
+  calc_anomaly(baseline_range = c(1999, 2015))
+
+plot_anomaly(data = calanus_anom,
              value_col = anomaly,
-             var_col = EAR,
-             composite_data = subset(comp_data, EAR == 1),
-             comp_value_col = anomaly)
-
-# Example 3: Bar-only look
-plot_anomaly(data = sst_anom, value_col = anomaly, show_scorecard = FALSE)
+             show_scorecard = FALSE,
+             show_composite = FALSE,
+             y_label = "Standardized Anomaly")
 }
 }
