@@ -49,9 +49,10 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
   target_var <- rlang::enquo(var)
   var_name_raw <- rlang::as_label(target_var)
 
-  # Full Restored Dictionary
+  # Full Temperature Dictionary
   lookup <- list(
-    en = c("sst.month5"="May Sea Surface Temperature", "sst.month6"="June Sea Surface Temperature",
+    en = c("sst"="Annual Sea Surface Temperature", "sst.anomaly"="Anomaly in Annual Sea Surface Temperature",
+           "sst.month5"="May Sea Surface Temperature", "sst.month6"="June Sea Surface Temperature",
            "sst.month7"="July Sea Surface Temperature", "sst.month8"="August Sea Surface Temperature",
            "sst.month9"="September Sea Surface Temperature", "sst.month10"="October Sea Surface Temperature",
            "sst.month11"="November Sea Surface Temperature", "t.deep"="Bottom Temperature",
@@ -59,7 +60,8 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
            "t.250"="Temperature at 250m", "t.300"="Temperature at 300m",
            "tmax200.400"="Maximum Temperature (200-400m)",
            "Northern"="Northern GSL", "Southern"="Southern GSL"),
-    fr = c("sst.month5"="Température de surface de la mer en mai", "sst.month6"="Température de surface de la mer en juin",
+    fr = c("sst"="Température de surface de la mer", "sst.anomaly"="Anomalie de la température annuelle de la surface de la mer",
+           "sst.month5"="Température de surface de la mer en mai", "sst.month6"="Température de surface de la mer en juin",
            "sst.month7"="Température de surface de la mer en juillet", "sst.month8"="Température de surface de la mer en août",
            "sst.month9"="Température de surface de la mer en septembre", "sst.month10"="Température de surface de la mer en octobre",
            "sst.month11"="Température de surface de la mer en novembre", "t.deep"="Température du fond",
@@ -321,11 +323,11 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
   # Comprehensive Dictionary from gslea variables
   lookup <- list(
     en = c("calanus.finmarchicus.annual"="Abundance of Calanus finmarchicus (Annual)",
-           "calanus.finmarchicus.early_summer"="Abundance of C. finmarchicus (Early Summer)",
-           "calanus.finmarchicus.fall"="Abundance of C. finmarchicus (Fall)",
+           "calanus.finmarchicus.early_summer"="Abundance of Calanus finmarchicus (Early Summer)",
+           "calanus.finmarchicus.fall"="Abundance of Calanus finmarchicus (Fall)",
            "calanus.hyperboreus.annual"="Abundance of Calanus hyperboreus (Annual)",
-           "calanus.hyperboreus.early_summer"="Abundance of C. hyperboreus (Early Summer)",
-           "calanus.hyperboreus.fall"="Abundance of C. hyperboreus (Fall)",
+           "calanus.hyperboreus.early_summer"="Abundance of Calanus hyperboreus (Early Summer)",
+           "calanus.hyperboreus.fall"="Abundance of Calanus hyperboreus (Fall)",
            "chl0_100.annual"="Chlorophyll-a weight (0-100m, Annual)",
            "chl0_100.early_summer"="Chlorophyll-a weight (Early Summer)",
            "chl0_100.fall"="Chlorophyll-a weight (Fall)",
@@ -342,11 +344,11 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
            "start"="Phytoplankton Bloom Start",
            "magnitude"="Phytoplankton Bloom Magnitude"),
     fr = c("calanus.finmarchicus.annual"="Abondance de Calanus finmarchicus (Annuel)",
-           "calanus.finmarchicus.early_summer"="Abondance de C. finmarchicus (Début d'été)",
-           "calanus.finmarchicus.fall"="Abondance de C. finmarchicus (Automne)",
+           "calanus.finmarchicus.early_summer"="Abondance de Calanus finmarchicus (Début d'été)",
+           "calanus.finmarchicus.fall"="Abondance de Calanus finmarchicus (Automne)",
            "calanus.hyperboreus.annual"="Abondance de Calanus hyperboreus (Annuel)",
-           "calanus.hyperboreus.early_summer"="Abondance de C. hyperboreus (Début d'été)",
-           "calanus.hyperboreus.fall"="Abondance de C. hyperboreus (Automne)",
+           "calanus.hyperboreus.early_summer"="Abondance de Calanus hyperboreus (Début d'été)",
+           "calanus.hyperboreus.fall"="Abondance de Calanus hyperboreus (Automne)",
            "chl0_100.annual"="Poids de chlorophylle-a (0-100m, Annuel)",
            "chl0_100.early_summer"="Poids de chlorophylle-a (Début d'été)",
            "chl0_100.fall"="Poids de chlorophylle-a (Automne)",
@@ -431,4 +433,258 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
   }
 
   return(p)
+}
+
+
+#' Calculate Anomalies from a Baseline Mean
+#'
+#' @description
+#' Calculates the anomaly of a variable relative to a user-specified baseline
+#' period. Returns a focused data frame containing only the year, the original
+#' value, the baseline mean used, and the resulting anomaly.
+#'
+#' @param data A data frame containing at least \code{year} and \code{value} columns.
+#' @param baseline_range Numeric vector \code{c(start, end)} defining the period
+#'   used to calculate the mean. This argument is required.
+#' @param year_range Optional numeric vector \code{c(start, end)} to filter the
+#'   returned data. If \code{NULL}, returns all years in the input data.
+#' @param quiet Logical. If \code{FALSE} (default), prints the baseline mean
+#'   to the console via a message.
+#'
+#' @return A focused data frame (tibble) with columns: \code{year}, \code{value},
+#'   \code{baseline_mean}, and \code{anomaly}.
+#'
+#' @examples
+#' \dontrun{
+#' # Example 1: Using the native R pipe (|>)
+#' sst_anom <- EA.data |>
+#'   dplyr::filter(variable == "sst.month10", EAR == 0) |>
+#'   calc_anomaly(baseline_range = c(1991, 2020))
+#'
+#' # Example 2: Using base R subset() and assignment
+#' physical_data <- subset(EA.data, variable == "t.deep" & EAR == 1)
+#' deep_t_anom <- calc_anomaly(data = physical_data,
+#'                             baseline_range = c(1995, 2015))
+#'
+#' # View the clean result
+#' head(deep_t_anom)
+#' }
+#' @export
+calc_anomaly <- function(data,
+                         baseline_range,
+                         year_range = NULL,
+                         quiet = FALSE) {
+
+  # 1. Input Validation
+  if (missing(baseline_range)) {
+    stop("Argument 'baseline_range' is missing. You must specify c(start_year, end_year).")
+  }
+
+  if (!all(c("year", "value") %in% names(data))) {
+    stop("The data frame must contain 'year' and 'value' columns.")
+  }
+
+  # 2. Calculate the baseline mean (climatology)
+  climatology_mean <- data |>
+    dplyr::filter(year >= baseline_range[1], year <= baseline_range[2]) |>
+    dplyr::summarise(m = mean(value, na.rm = TRUE)) |>
+    dplyr::pull(m)
+
+  # 3. Handle cases where the baseline period has no data
+  if (is.na(climatology_mean)) {
+    stop("The calculated baseline mean is NA. Ensure the 'baseline_range' overlaps with your data.")
+  }
+
+  if (!quiet) {
+    message(paste("Calculated baseline mean:", round(climatology_mean, 3)))
+  }
+
+  # 4. Filter for specific output years if requested
+  out_df <- data
+  if (!is.null(year_range)) {
+    out_df <- out_df |>
+      dplyr::filter(year >= year_range[1], year <= year_range[2])
+  }
+
+  # 5. Construct the focused result
+  result <- out_df |>
+    dplyr::transmute(
+      year = year,
+      value = value,
+      baseline_mean = climatology_mean,
+      anomaly = value - climatology_mean
+    ) |>
+    dplyr::filter(!is.na(value))
+
+  return(result)
+}
+
+#' Plot Generic Anomaly with Standardized Scorecard
+#'
+#' @description
+#' Creates a publication-quality anomaly plot with a standardized color scorecard.
+#' Features include bilingual support, automated alignment, and y-axis customization.
+#'
+#' @param data Data frame containing \code{year} and the anomaly values.
+#' @param value_col Unquoted name of the anomaly column for the bars.
+#' @param var_col Optional unquoted name of the grouping column (e.g., \code{Depth}).
+#' @param composite_data Optional data frame for the line and scorecard.
+#' @param comp_value_col Unquoted name of the column for the line/scorecard.
+#' @param show_composite Logical. Should the composite line be drawn?
+#' @param show_scorecard Logical. Should the heatmap scorecard be drawn?
+#' @param year_range Numeric vector \code{c(start, end)}.
+#' @param colors Optional named vector for bar colors.
+#' @param lang Language: \code{"en"} (default) or \code{"fr"}.
+#' @param y_label Optional string for the y-axis title.
+#' @param y_breaks Optional numeric vector for y-axis tick marks.
+#' @param base_size Numeric. Base font size for scaling all plot text. Defaults to 11.
+#'
+#' @return A combined plot object (cowplot).
+#'
+#' @examples
+#' \dontrun{
+#' # Example 1: Standard SST Anomaly with Scorecard
+#' sst_anom <- EA.data |>
+#'   dplyr::filter(variable == "sst.month10", EAR == 5) |>
+#'   calc_anomaly(baseline_range = c(1991, 2020))
+#'
+#' plot_anomaly(sst_anom, value_col = anomaly, comp_value_col = anomaly)
+#'
+#' # Example 2: Comparison (One region as bars, another as composite line)
+#' comp_data <- EA.data |>
+#'   dplyr::filter(variable == "t.deep", EAR %in% c(1, 5)) |>
+#'   dplyr::group_by(EAR) |>
+#'   calc_anomaly(baseline_range = c(1991, 2020))
+#'
+#' plot_anomaly(data = subset(comp_data, EAR == 5),
+#'              value_col = anomaly,
+#'              var_col = EAR,
+#'              composite_data = subset(comp_data, EAR == 1),
+#'              comp_value_col = anomaly)
+#'
+#' # Example 3: Bar-only look
+#' plot_anomaly(data = sst_anom, value_col = anomaly, show_scorecard = FALSE)
+#' }
+#' @export
+plot_anomaly <- function(data,
+                         value_col,
+                         var_col = NULL,
+                         composite_data = NULL,
+                         comp_value_col = NULL,
+                         show_composite = TRUE,
+                         show_scorecard = TRUE,
+                         year_range = NULL,
+                         colors = NULL,
+                         lang = "en",
+                         y_label = NULL,
+                         y_breaks = ggplot2::waiver(),
+                         base_size = 11) {
+
+  # 1. Inputs and Setup
+  val_enquo <- rlang::enquo(value_col)
+  var_enquo <- rlang::enquo(var_col)
+  comp_val_enquo <- rlang::enquo(comp_value_col)
+
+  terms <- list(
+    en = c(anom = "Anomalies", yr = "Year", depth = "Depth", area = "Area", region = "Region"),
+    fr = c(anom = "Anomalies", yr = "Année", depth = "Profondeur", area = "Zone", region = "Région")
+  )
+
+  translate_term <- function(x) {
+    if(is.null(x)) return(NULL)
+    low_x <- tolower(x)
+    if(low_x %in% names(terms[[lang]])) return(terms[[lang]][[low_x]])
+    return(x)
+  }
+
+  if (is.null(composite_data)) composite_data <- data
+
+  all_years <- sort(unique(c(data$year, composite_data$year)))
+  if (!is.null(year_range)) {
+    x_lims <- year_range
+  } else {
+    x_lims <- range(all_years, na.rm = TRUE)
+  }
+
+  # Data filtering based on limits
+  data <- data |> dplyr::filter(year >= x_lims[1], year <= x_lims[2])
+  composite_data <- composite_data |> dplyr::filter(year >= x_lims[1], year <= x_lims[2])
+
+  final_y_label <- if(!is.null(y_label)) y_label else terms[[lang]][["anom"]]
+
+  # 2. Top Plot: Bars and Line
+  p_top <- ggplot2::ggplot() +
+    ggplot2::geom_hline(yintercept = 0, color = "black", linewidth = 0.7)
+
+  if (!rlang::quo_is_null(var_enquo)) {
+    p_top <- p_top +
+      ggplot2::geom_bar(data = data,
+                        ggplot2::aes(x = year, y = !!val_enquo, fill = !!var_enquo),
+                        color = "black", stat = "identity", width = 0.8) +
+      ggplot2::labs(fill = translate_term(rlang::as_label(var_enquo)))
+  } else {
+    p_top <- p_top +
+      ggplot2::geom_bar(data = data,
+                        ggplot2::aes(x = year, y = !!val_enquo),
+                        fill = "grey70", color = "black", stat = "identity", width = 0.8)
+  }
+
+  if (show_composite && !rlang::quo_is_null(comp_val_enquo)) {
+    p_top <- p_top +
+      ggplot2::geom_line(data = composite_data,
+                         ggplot2::aes(x = year, y = !!comp_val_enquo), linewidth = 1) +
+      ggplot2::geom_point(data = composite_data,
+                          ggplot2::aes(x = year, y = !!comp_val_enquo), size = 3)
+  }
+
+  p_top <- p_top +
+    ggplot2::theme_bw(base_size = base_size) +
+    # The FIX: Added 0.6 buffer and set clip to "off"
+    ggplot2::coord_cartesian(xlim = c(x_lims[1]-0.6, x_lims[2]+0.6), clip = "off") +
+    ggplot2::scale_x_continuous(expand = c(0,0)) +
+    ggplot2::scale_y_continuous(breaks = y_breaks) +
+    ggplot2::labs(y = final_y_label, x = terms[[lang]][["yr"]]) +
+    ggplot2::theme(panel.grid.minor = ggplot2::element_blank())
+
+  if (!is.null(colors)) p_top <- p_top + ggplot2::scale_fill_manual(values = colors)
+
+  # 3. Bottom Plot: Standardized Scorecard
+  if (show_scorecard && !rlang::quo_is_null(comp_val_enquo)) {
+    p_top <- p_top + ggplot2::theme(axis.title.x = ggplot2::element_blank(),
+                                    axis.text.x = ggplot2::element_blank(),
+                                    axis.ticks.x = ggplot2::element_blank(),
+                                    plot.margin = ggplot2::margin(t = 5, r = 10, b = 0, l = 5))
+
+    score_palette <- c(grDevices::colorRampPalette(c("black","blue", "white"))(10),
+                       grDevices::colorRampPalette(c("white", "red", "#5D0000"))(7))
+
+    Breaks <- c(-5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3)
+    Labels <- c("-5", "-4.5", "-4", "-3.5", "-3", "-2.5", "-2", "-1.5", "-1", "-0.5", "0", "0.5", "1", "1.5", "2", "2.5")
+
+    score_df <- composite_data |>
+      dplyr::mutate(
+        val = !!comp_val_enquo,
+        score_bin = cut(val, breaks = Breaks, labels = Labels, include.lowest = TRUE)
+      )
+
+    p_bot <- ggplot2::ggplot(score_df, ggplot2::aes(x = year, y = 1, fill = score_bin)) +
+      ggplot2::geom_tile(color = "black", linewidth = 0.25) +
+      ggplot2::geom_text(ggplot2::aes(label = round(val, 1)),
+                         color = ifelse(abs(score_df$val) >= 2, "white", "black"),
+                         size = base_size * 0.25) +
+      ggplot2::scale_fill_manual(values = score_palette, drop = FALSE, na.value = "grey80") +
+      # Match top plot exactly
+      ggplot2::coord_cartesian(xlim = c(x_lims[1]-0.6, x_lims[2]+0.6), clip = "off") +
+      ggplot2::scale_x_continuous(expand = c(0,0), breaks = seq(x_lims[1], x_lims[2], by = 1)) +
+      ggplot2::theme_void(base_size = base_size) +
+      ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5, size = base_size * 0.8),
+                     legend.position = "none",
+                     plot.margin = ggplot2::margin(t = -1, r = 10, b = 5, l = 5))
+
+    final_plot <- cowplot::plot_grid(p_top, p_bot, ncol = 1, rel_heights = c(10, 2), align = "v", axis = "lr")
+  } else {
+    final_plot <- p_top
+  }
+
+  return(final_plot)
 }
