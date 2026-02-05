@@ -15,6 +15,7 @@ License: Crown Copyright
 Depends:
     ggplot2,
     cowplot,
+    scales,
     rlang,
     dplyr,
     mgcv,

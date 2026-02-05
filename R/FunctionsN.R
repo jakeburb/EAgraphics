@@ -698,3 +698,116 @@ plot_anomaly <- function(data,
 
   return(final_plot)
 }
+
+#' Plot Stock Status Relative to Limit Reference Point (LRP)
+#'
+#' @description
+#' Creates a standardized heatmap visualizing stock status over time.
+#' The plot includes colour coding to distinguish
+#' between different status zones. Features bilingual support, customizable year
+#' ranges, and the option to toggle the main title on and off.
+#'
+#' @param data A data frame containing stock status data. Defaults to
+#'   \code{gslea::EA.extra.data$stock.status}.
+#' @param year_col Unquoted name of the column containing the year.
+#'   Defaults to \code{Year}.
+#' @param stock_col Unquoted name of the column containing stock names.
+#'   Defaults to \code{Stock}.
+#' @param status_col Unquoted name of the column containing status values
+#'   relative to LRP. Defaults to \code{status.LRP}.
+#' @param lang Character string for language: \code{"en"} (English, default)
+#'   or \code{"fr"} (French).
+#' @param year_range Optional numeric vector \code{c(start, end)} to filter
+#'   the years shown.
+#' @param show_title Logical. Should the main plot title be displayed? Defaults to \code{TRUE}.
+#' @param base_size Numeric. Base font size for the theme. Defaults to 14.
+#'
+#' @return A \code{ggplot2} object.
+#'
+#' @examples
+#' \dontrun{
+#' # Standard plot with title
+#' plot_stock_status(lang = "en")
+#'
+#' # Plot without title for use in multi-panel figures or reports
+#' plot_stock_status(lang = "en", show_title = FALSE)
+#'
+#' #' # Plot without title and in french with year 1990-2025
+#' plot_stock_status(lang = "fr", year_range=c(1990,2025), show_title = FALSE)
+#' }
+#' @export
+plot_stock_status <- function(data = NULL,
+                              year_col = Year,
+                              stock_col = Stock,
+                              status_col = status.LRP,
+                              lang = "en",
+                              year_range = NULL,
+                              show_title = TRUE,
+                              base_size = 14) {
+
+  # 1. Data Setup - Accessing internal package data from dependency
+  if (is.null(data)) {
+    if (!exists("EA.extra.data")) stop("EA.extra.data not found. Please provide a data frame.")
+    data <- EA.extra.data$stock.status
+  }
+
+  year_enquo <- rlang::enquo(year_col)
+  stock_enquo <- rlang::enquo(stock_col)
+  stat_enquo <- rlang::enquo(status_col)
+
+  # 2. Translations
+  terms <- list(
+    en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
+           xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
+    fr = c(title = "État des stocks par rapport au point de référence limite (PRL)",
+           xlab = "Année", ylab = "Stock", leg = "État/PRL")
+  )
+
+  # 3. Filtering & Renaming
+  plot_df <- data |>
+    dplyr::rename(yr = !!year_enquo, stk = !!stock_enquo, val = !!stat_enquo)
+
+  if (!is.null(year_range)) {
+    plot_df <- plot_df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
+  }
+
+  # 4. Color Palette
+  custom_ramp <- grDevices::colorRampPalette(c("#b2182b", "#ffffbf", "#1a9850"))(30)
+
+  # 5. Build Plot
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = yr, y = stk, fill = val)) +
+    ggplot2::geom_tile(color = "white", linewidth = 0.2) +
+    ggplot2::geom_contour(ggplot2::aes(z = val), breaks = 1, color = "black",
+                          linewidth = 0.8, linetype = "dashed") +
+    ggplot2::scale_fill_gradientn(
+      colors = custom_ramp,
+      values = scales::rescale(c(0, 0.9, 1.1, 1.9, 2.1, 2.5), from = c(0, 2.5)),
+      limits = c(0, 2.5),
+      na.value = "grey90",
+      name = terms[[lang]][["leg"]],
+      oob = scales::squish,
+      breaks = c(0, 1, 2, 2.5),
+      labels = if(lang == "fr") c("0", "1.0 (PRL)", "2.0", "2.5+") else c("0", "1.0 (LRP)", "2.0", "2.5+"),
+      guide = ggplot2::guide_colorbar(barheight = ggplot2::unit(0.4, "npc"))
+    ) +
+    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = seq(1970, 2030, by = 5)) +
+    ggplot2::scale_y_discrete(expand = c(0, 0)) +
+    ggplot2::labs(x = terms[[lang]][["xlab"]],
+                  y = terms[[lang]][["ylab"]]) +
+    ggplot2::theme_bw(base_size = base_size) +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.title = ggplot2::element_text(face = "bold"),
+      legend.title = ggplot2::element_text(size = base_size * 0.9, face = "bold"),
+      panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 1)
+    )
+
+  # Optional Title Logic
+  if (show_title) {
+    p <- p + ggplot2::labs(title = terms[[lang]][["title"]]) +
+      ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", hjust = 0.5, size = base_size * 1.1))
+  }
+
+  return(p)
+}
