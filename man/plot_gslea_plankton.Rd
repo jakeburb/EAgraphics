@@ -11,7 +11,8 @@ plot_gslea_plankton(
   groups = NULL,
   year_range = c(1990, 2023),
   lang = "en",
-  fit_smooth = TRUE,
+  fit_smooth = FALSE,
+  show_line = TRUE,
   method = "gam",
   formula = y ~ s(x, bs = "cs", k = 15),
   col_palette = NULL,
@@ -38,6 +39,8 @@ plot_gslea_plankton(
 
 \item{fit_smooth}{Logical. If \code{TRUE}, adds a GAM smoother to the plot.}
 
+\item{show_line}{Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.}
+
 \item{method}{Smoothing method to use. Defaults to \code{"gam"}.}
 
 \item{formula}{Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.}
@@ -60,7 +63,8 @@ A \code{ggplot} object.
 \description{
 Visualizes planktonic variables (phytoplankton and zooplankton) from the gslea
 package. This function handles complex units (e.g., 10³ ind m⁻², mg chla m⁻²)
-and provides bilingual labels for species and seasonal subsets.
+and provides bilingual labels. It can visualize with points connected by lines
+(default) and/or a smoothed GAM trend.
 }
 \examples{
 \dontrun{
