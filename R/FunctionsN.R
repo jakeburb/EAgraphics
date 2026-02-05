@@ -758,8 +758,6 @@ plot_stock_status <- function(data = NULL,
 
   # 2. Internal Translation Dictionary
   stock_dict <- c(
-    "Snow Crab"                   = "Crabe des neiges",
-    "Lobster"                     = "Homard",
     "Cod - 3Pn4RS"                = "Morue - 3Pn4RS",
     "Shrimp-Sept-Iles"            = "Crevette-Sept-Iles",
     "Shrimp-Estuaire"             = "Crevette-Estuaire",
