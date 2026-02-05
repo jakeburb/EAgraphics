@@ -289,7 +289,8 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
 #' @description
 #' Visualizes planktonic variables (phytoplankton and zooplankton) from the gslea
 #' package. This function handles complex units (e.g., 10³ ind m⁻², mg chla m⁻²)
-#' and provides bilingual labels for species and seasonal subsets.
+#' and provides bilingual labels. It can visualize with points connected by lines
+#' (default) and/or a smoothed GAM trend.
 #'
 #' @param data Long-format data frame containing \code{year}, \code{EAR}, \code{variable}, and \code{value}.
 #' @param var Planktonic variable to plot (unquoted, e.g., \code{calanus.finmarchicus.annual}).
@@ -298,6 +299,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
 #' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param fit_smooth Logical. If \code{TRUE}, adds a GAM smoother to the plot.
+#' @param show_line Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.
 #' @param method Smoothing method to use. Defaults to \code{"gam"}.
 #' @param formula Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.
 #' @param col_palette Optional character vector of colors for the regions/groups.
@@ -330,17 +332,17 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
 #' }
 #' @export
 plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
-                               lang = "en", fit_smooth = TRUE, method = "gam",
-                               formula = y ~ s(x, bs = "cs", k = 15),
-                               col_palette = NULL, ear_names = NULL,
-                               xlab = NULL, ylab = NULL, base_size = 14,
-                               facet_scales = "free_y",
-                               custom_theme = ggplot2::theme_bw()) {
+                                lang = "en", fit_smooth = FALSE, show_line = TRUE,
+                                method = "gam", formula = y ~ s(x, bs = "cs", k = 15),
+                                col_palette = NULL, ear_names = NULL,
+                                xlab = NULL, ylab = NULL, base_size = 14,
+                                facet_scales = "free_y",
+                                custom_theme = ggplot2::theme_bw()) {
 
   target_var <- rlang::enquo(var)
   var_name_raw <- rlang::as_label(target_var)
 
-  # Comprehensive Dictionary from gslea variables
+  # 1. Dictionary
   lookup <- list(
     en = c("calanus.finmarchicus.annual"="Abundance of Calanus finmarchicus (Annual)",
            "calanus.finmarchicus.early_summer"="Abundance of Calanus finmarchicus (Early Summer)",
@@ -388,12 +390,13 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
 
   base_label <- if(var_name_raw %in% names(lookup[[lang]])) lookup[[lang]][var_name_raw] else var_name_raw
 
-  # Refined Unit Logic based on Table
+  # 2. Refined Unit Logic
   unit <- if(grepl("dw2_t", var_name_raw)) " (g m⁻²)" else
     if(grepl("chl0_100|magnitude", var_name_raw)) " (mg chla m⁻²)" else
       if(var_name_raw == "start") { if(lang == "fr") " (Jour de l'année)" else " (Day of Year)" } else
         if(grepl("^ci\\.|^civ\\.", var_name_raw)) "" else " (10³ ind m⁻²)"
 
+  # 3. Filtering & Aggregating
   all_ears_char <- if(!is.null(groups)) as.character(unlist(groups)) else as.character(EARs)
 
   plot_df <- data |>
@@ -415,6 +418,7 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
                     ear_label = if(!is.null(ear_names) && ear_str %in% names(ear_names)) ear_names[ear_str] else paste("EAR", ear_str))
   }
 
+  # 4. Translation & Factors
   safe_translate <- function(x, language) {
     if(language != "fr") return(x)
     if(x %in% names(lookup$fr)) return(lookup$fr[x])
@@ -427,10 +431,18 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
     dplyr::mutate(ear_label = factor(ear_label)) |>
     dplyr::filter(!is.na(value))
 
+  # 5. Build Plot
   final_xlab <- if(!is.null(xlab)) xlab else if(lang == "fr") "Année" else "Year"
   final_ylab <- if(is.null(ylab)) paste0(base_label, unit) else ylab
 
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label))
+
+  # NEW: Add connecting lines before points
+  if (show_line) {
+    p <- p + ggplot2::geom_line(alpha = 0.5, linewidth = 0.8)
+  }
+
+  p <- p +
     ggplot2::geom_point(size = 2.5, alpha = 0.8) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
@@ -444,7 +456,8 @@ plot_gslea_plankton <- function(data, var, EARs = 0, groups = NULL, year_range =
   }
 
   if (fit_smooth && nrow(plot_df) > 5) {
-    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black", se = TRUE, fill = "grey80", alpha = 0.4)
+    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black",
+                                  se = TRUE, fill = "grey80", alpha = 0.4)
   }
 
   if (length(unique(plot_df$ear_label)) > 1) {
