@@ -43,8 +43,7 @@ A \code{ggplot2} object.
 }
 \description{
 Creates a standardized heatmap visualizing stock status over time.
-Features colour-coded status zones and a dashed contour line at the LRP
-threshold (1.0). Includes bilingual support (English/French) with an internal
+Features colour-coded status zones. Includes bilingual support (English/French) with an internal
 dictionary to ensure consistent Y-axis ordering regardless of the language selected.
 }
 \examples{
@@ -58,6 +57,6 @@ plot_stock_status(lang = "en")
 plot_stock_status(lang = "en", show_title = FALSE)
 
 # Example 3: Plot without title and in french with year 1990-2025
-plot_stock_status(lang = "fr", year_range = c(1990, 2025), show_title = FALSE)
+plot_stock_status(lang = "fr", year_range = c(1990, 2025), show_title = FALSE, base_size=20)
 }
 }
