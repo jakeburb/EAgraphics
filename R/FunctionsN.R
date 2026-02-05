@@ -5,8 +5,9 @@
 #' Plot Temperature data from gslea by EAR
 #'
 #' @description
-#' Visualizes temperature data from the gslea package using long-format data.
-#' Restored with full bilingual dictionary and native R pipes.
+#' Visualizes temperature data from the gslea package using long-format data. Provides billingual plots.
+#' Can visualize with points connnected by line or with a smoothed GAM, plots line by default.
+#'
 #'
 #' @param data Long-format data frame containing \code{year}, \code{EAR}, \code{variable}, and \code{value}.
 #' @param var Temperature variable to plot (unquoted, e.g., \code{sst.month10}).
@@ -15,6 +16,7 @@
 #' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"} or \code{"fr"}.
 #' @param fit_smooth Logical. If \code{TRUE}, fits a GAM smoother.
+#' @param show_line Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.
 #' @param method Smoothing method. Defaults to \code{"gam"}.
 #' @param formula Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.
 #' @param col_palette Optional character vector of colors for the regions.
@@ -39,10 +41,10 @@
 #' }
 #' @export
 plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
-                                   lang = "en", fit_smooth = TRUE, method = "gam",
-                                   formula = y ~ s(x, bs = "cs", k = 15),
+                                   lang = "en", fit_smooth = FALSE, show_line = TRUE,
+                                   method = "gam", formula = y ~ s(x, bs = "cs", k = 15),
                                    col_palette = NULL, ear_names = NULL,
-                                   xlab = NULL, ylab = NULL, base_size = 14,
+                                   xlab = NULL, ylab = NULL, base_size = 16,
                                    facet_scales = "free_y",
                                    custom_theme = ggplot2::theme_bw()) {
 
@@ -109,8 +111,13 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
   final_xlab <- if(!is.null(xlab)) xlab else if(lang == "fr") "Année" else "Year"
   final_ylab <- if(is.null(ylab)) paste0(base_label, " (°C)") else ylab
 
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
-    ggplot2::geom_point(size = 2.5, alpha = 0.8) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label))
+  # Add line before points so points sit on top
+  if (show_line) {
+    p <- p + ggplot2::geom_line(alpha = 0.5, linewidth = 0.8)
+  }
+
+  p <- p + ggplot2::geom_point(size = 2.5, alpha = 0.8) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
     ggplot2::theme(text = ggplot2::element_text(size = base_size),
@@ -138,6 +145,7 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
 #' @description
 #' Visualizes ice and seasonal timing metrics from the gslea package.
 #' Supports individual EARs or custom aggregated groups with controllable scales.
+#' Can visualize with points connected by line or with a smoothed GAM.
 #'
 #' @param data Long-format data frame containing \code{year}, \code{EAR}, \code{variable}, and \code{value}.
 #' @param var Ice/seasonal variable to plot (unquoted, e.g., \code{ice.duration}).
@@ -146,6 +154,7 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
 #' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1990, 2023)}.
 #' @param lang Language for labels: \code{"en"} or \code{"fr"}.
 #' @param fit_smooth Logical. If \code{TRUE}, adds a GAM smoother.
+#' @param show_line Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.
 #' @param method Smoothing method. Defaults to \code{"gam"}.
 #' @param formula Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.
 #' @param col_palette Optional character vector of colors for the regions.
@@ -159,18 +168,17 @@ plot_gslea_temperature <- function(data, var, EARs = 0, groups = NULL, year_rang
 #'
 #' @examples
 #' \dontrun{
-#' # Compare ice duration between Northern and Southern groups
+#' # Compare ice duration between Northern and Southern groups with lines and points
 #' plot_gslea_ice(EA.data, ice.duration,
 #'                year_range = c(2000, 2020),
 #'                groups = list("Northern" = 1:4, "Southern" = 5:6),
 #'                lang = "fr",
-#'                facet_scales = "fixed",
-#'                col_palette = c("black", "blue"))
+#'                show_line = TRUE)
 #' }
 #' @export
 plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(1990, 2023),
-                           lang = "en", fit_smooth = TRUE, method = "gam",
-                           formula = y ~ s(x, bs = "cs", k = 15),
+                           lang = "en", fit_smooth = FALSE, show_line = TRUE,
+                           method = "gam", formula = y ~ s(x, bs = "cs", k = 15),
                            col_palette = NULL, ear_names = NULL,
                            xlab = NULL, ylab = NULL, base_size = 14,
                            facet_scales = "free_y",
@@ -179,6 +187,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
   target_var <- rlang::enquo(var)
   var_name_raw <- rlang::as_label(target_var)
 
+  # 1. Dictionary
   lookup <- list(
     en = c("first.ice"="Date of First Ice", "last.ice"="Date of Last Ice", "ice.duration"="Ice Duration",
            "ice.max"="Maximum Ice Coverage", "start.10"="Start of Warming (10°C)", "start.12"="Start of Warming (12°C)",
@@ -192,7 +201,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
 
   base_label <- if(var_name_raw %in% names(lookup[[lang]])) lookup[[lang]][var_name_raw] else var_name_raw
 
-  # Bilingual Unit Logic
+  # 2. Units
   unit <- if (lang == "fr") {
     if(grepl("start|decrease", var_name_raw)) " (Semaine de l'année)" else
       if(grepl("duration", var_name_raw)) " (Jours)" else
@@ -203,6 +212,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
         if(grepl("first|last", var_name_raw)) " (Day of Year)" else ""
   }
 
+  # 3. Filtering & Grouping
   all_ears_char <- if(!is.null(groups)) as.character(unlist(groups)) else as.character(EARs)
 
   plot_df <- data |>
@@ -224,6 +234,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
                     ear_label = if(!is.null(ear_names) && ear_str %in% names(ear_names)) ear_names[ear_str] else paste("EAR", ear_str))
   }
 
+  # 4. Translation
   safe_translate <- function(x, language) {
     if(language != "fr") return(x)
     if(x %in% names(lookup$fr)) return(lookup$fr[x])
@@ -236,10 +247,18 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
     dplyr::mutate(ear_label = factor(ear_label)) |>
     dplyr::filter(!is.na(value))
 
+  # 5. Build Plot
   final_xlab <- if(!is.null(xlab)) xlab else if(lang == "fr") "Année" else "Year"
   final_ylab <- if(is.null(ylab)) paste0(base_label, unit) else ylab
 
-  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label)) +
+  p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label))
+
+  # NEW: Add connecting lines
+  if (show_line) {
+    p <- p + ggplot2::geom_line(alpha = 0.5, linewidth = 0.8)
+  }
+
+  p <- p +
     ggplot2::geom_point(size = 2.5, alpha = 0.8) +
     ggplot2::labs(x = final_xlab, y = final_ylab, color = "Region") +
     custom_theme +
@@ -253,7 +272,8 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
   }
 
   if (fit_smooth && nrow(plot_df) > 5) {
-    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black", se = TRUE, fill = "grey80", alpha = 0.4)
+    p <- p + ggplot2::geom_smooth(method = method, formula = formula, color = "black",
+                                  se = TRUE, fill = "grey80", alpha = 0.4)
   }
 
   if (length(unique(plot_df$ear_label)) > 1) {

@@ -11,7 +11,8 @@ plot_gslea_ice(
   groups = NULL,
   year_range = c(1990, 2023),
   lang = "en",
-  fit_smooth = TRUE,
+  fit_smooth = FALSE,
+  show_line = TRUE,
   method = "gam",
   formula = y ~ s(x, bs = "cs", k = 15),
   col_palette = NULL,
@@ -38,6 +39,8 @@ plot_gslea_ice(
 
 \item{fit_smooth}{Logical. If \code{TRUE}, adds a GAM smoother.}
 
+\item{show_line}{Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.}
+
 \item{method}{Smoothing method. Defaults to \code{"gam"}.}
 
 \item{formula}{Smoothing formula. Defaults to \code{y ~ s(x, bs = "cs", k = 15)}.}
@@ -60,15 +63,15 @@ A \code{ggplot} object.
 \description{
 Visualizes ice and seasonal timing metrics from the gslea package.
 Supports individual EARs or custom aggregated groups with controllable scales.
+Can visualize with points connected by line or with a smoothed GAM.
 }
 \examples{
 \dontrun{
-# Compare ice duration between Northern and Southern groups
+# Compare ice duration between Northern and Southern groups with lines and points
 plot_gslea_ice(EA.data, ice.duration,
                year_range = c(2000, 2020),
                groups = list("Northern" = 1:4, "Southern" = 5:6),
                lang = "fr",
-               facet_scales = "fixed",
-               col_palette = c("black", "blue"))
+               show_line = TRUE)
 }
 }

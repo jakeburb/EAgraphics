@@ -11,14 +11,15 @@ plot_gslea_temperature(
   groups = NULL,
   year_range = c(1990, 2023),
   lang = "en",
-  fit_smooth = TRUE,
+  fit_smooth = FALSE,
+  show_line = TRUE,
   method = "gam",
   formula = y ~ s(x, bs = "cs", k = 15),
   col_palette = NULL,
   ear_names = NULL,
   xlab = NULL,
   ylab = NULL,
-  base_size = 14,
+  base_size = 16,
   facet_scales = "free_y",
   custom_theme = ggplot2::theme_bw()
 )
@@ -37,6 +38,8 @@ plot_gslea_temperature(
 \item{lang}{Language for labels: \code{"en"} or \code{"fr"}.}
 
 \item{fit_smooth}{Logical. If \code{TRUE}, fits a GAM smoother.}
+
+\item{show_line}{Logical. If \code{TRUE}, connects annual points with a line. Defaults to \code{TRUE}.}
 
 \item{method}{Smoothing method. Defaults to \code{"gam"}.}
 
@@ -58,8 +61,8 @@ plot_gslea_temperature(
 A \code{ggplot} object.
 }
 \description{
-Visualizes temperature data from the gslea package using long-format data.
-Restored with full bilingual dictionary and native R pipes.
+Visualizes temperature data from the gslea package using long-format data. Provides billingual plots.
+Can visualize with points connnected by line or with a smoothed GAM, plots line by default.
 }
 \examples{
 \dontrun{
