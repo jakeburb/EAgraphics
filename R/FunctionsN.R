@@ -703,9 +703,9 @@ plot_anomaly <- function(data,
 #'
 #' @description
 #' Creates a standardized heatmap visualizing stock status over time.
-#' The plot includes colour coding to distinguish
-#' between different status zones. Features bilingual support, customizable year
-#' ranges, and the option to toggle the main title on and off.
+#' Features colour-coded status zones and a dashed contour line at the LRP
+#' threshold (1.0). Includes bilingual support (English/French) with an internal
+#' dictionary to ensure consistent Y-axis ordering regardless of the language selected.
 #'
 #' @param data A data frame containing stock status data. Defaults to
 #'   \code{gslea::EA.extra.data$stock.status}.
@@ -726,14 +726,16 @@ plot_anomaly <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' # Standard plot with title
+#' library(EAgraphics)
+#'
+#' # Example 1: Standard plot with title in English
 #' plot_stock_status(lang = "en")
 #'
-#' # Plot without title for use in multi-panel figures or reports
+#' # Example 2: Plot without title for use in multi-panel figures or reports
 #' plot_stock_status(lang = "en", show_title = FALSE)
 #'
-#' #' # Plot without title and in french with year 1990-2025
-#' plot_stock_status(lang = "fr", year_range=c(1990,2025), show_title = FALSE)
+#' # Example 3: Plot without title and in french with year 1990-2025
+#' plot_stock_status(lang = "fr", year_range = c(1990, 2025), show_title = FALSE)
 #' }
 #' @export
 plot_stock_status <- function(data = NULL,
@@ -743,9 +745,9 @@ plot_stock_status <- function(data = NULL,
                               lang = "en",
                               year_range = NULL,
                               show_title = TRUE,
-                              base_size = 14) {
+                              base_size = 16) {
 
-  # 1. Data Setup - Accessing internal package data from dependency
+  # 1. Data Setup
   if (is.null(data)) {
     if (!exists("EA.extra.data")) stop("EA.extra.data not found. Please provide a data frame.")
     data <- EA.extra.data$stock.status
@@ -755,7 +757,24 @@ plot_stock_status <- function(data = NULL,
   stock_enquo <- rlang::enquo(stock_col)
   stat_enquo <- rlang::enquo(status_col)
 
-  # 2. Translations
+  # 2. Internal Translation Dictionary
+  stock_dict <- c(
+    "Snow Crab"                   = "Crabe des neiges",
+    "Lobster"                     = "Homard",
+    "Cod - 3Pn4RS"                = "Morue - 3Pn4RS",
+    "Shrimp-Sept-Iles"            = "Crevette-Sept-Iles",
+    "Shrimp-Estuaire"             = "Crevette-Estuaire",
+    "Shrimp-Esquiman"             = "Crevette-Esquiman",
+    "Shrimp-Anticosti"            = "Crevette-Anticosti",
+    "Herring - 4RSw Spring"       = "Hareng 4RSw printemps",
+    "Herring - 4RSw Fall"         = "Hareng 4RSw automne",
+    "Sebastes mentella - Unit 1"  = "Sebastes mentella - Unité 1",
+    "Sebastes fasciatus - Unit 1" = "Sebastes fasciatus- Unité 1",
+    "Mackerel"                    = "Maquereau",
+    "Greenland Halibut"           = "Flétan du Groenland"
+  )
+
+  # 3. Translations for labels
   terms <- list(
     en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
            xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
@@ -763,7 +782,7 @@ plot_stock_status <- function(data = NULL,
            xlab = "Année", ylab = "Stock", leg = "État/PRL")
   )
 
-  # 3. Filtering & Renaming
+  # 4. Processing & Initial Aggregation
   plot_df <- data |>
     dplyr::rename(yr = !!year_enquo, stk = !!stock_enquo, val = !!stat_enquo)
 
@@ -771,14 +790,59 @@ plot_stock_status <- function(data = NULL,
     plot_df <- plot_df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
   }
 
-  # 4. Color Palette
+  # Resolve Duplicated Coordinates (Warning #1)
+  plot_df <- plot_df |>
+    dplyr::group_by(yr, stk) |>
+    dplyr::summarize(val = mean(val, na.rm = TRUE), .groups = "drop")
+
+  if (nrow(plot_df) == 0) stop("No data found for the selected range.")
+
+  # Capture the original alphabetical order of stocks
+  orig_levels <- sort(unique(plot_df$stk))
+
+  # 5. Handle Stock Name Translation & Order Preservation
+  if (lang == "fr") {
+    # Create the mapping for levels
+    translated_levels <- dplyr::recode(orig_levels, !!!stock_dict)
+    if (requireNamespace("rosettafish", quietly = TRUE)) {
+      translated_levels <- rosettafish::en2fr(translated_levels, allow_missing = TRUE)
+    }
+
+    # Translate the data
+    plot_df$stk <- dplyr::recode(plot_df$stk, !!!stock_dict)
+    if (requireNamespace("rosettafish", quietly = TRUE)) {
+      plot_df$stk <- rosettafish::en2fr(plot_df$stk, allow_missing = TRUE)
+    }
+
+    # Re-factor using the translated levels in the original index order
+    plot_df$stk <- factor(plot_df$stk, levels = translated_levels)
+  } else {
+    # For English, just ensure it's a factor based on orig_levels
+    plot_df$stk <- factor(plot_df$stk, levels = orig_levels)
+  }
+
+  # 6. Color Ramp & Plotting
   custom_ramp <- grDevices::colorRampPalette(c("#b2182b", "#ffffbf", "#1a9850"))(30)
 
-  # 5. Build Plot
   p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = yr, y = stk, fill = val)) +
-    ggplot2::geom_tile(color = "white", linewidth = 0.2) +
-    ggplot2::geom_contour(ggplot2::aes(z = val), breaks = 1, color = "black",
-                          linewidth = 0.8, linetype = "dashed") +
+    ggplot2::geom_tile(color = "white", linewidth = 0.2)
+
+  # Check if a contour is mathematically possible
+  has_lrp_cross <- any(plot_df$val < 1, na.rm = TRUE) && any(plot_df$val > 1, na.rm = TRUE)
+
+  if(has_lrp_cross) {
+    # We add 'group = stk' to prevent the lines from jumping between different stocks
+    # We use as.numeric(stk) to ensure the stat engine can calculate the position
+    p <- p + ggplot2::stat_contour(
+      ggplot2::aes(z = val, group = stk, y = as.numeric(stk)),
+      breaks = 1,
+      color = "black",
+      linewidth = 0.8,
+      linetype = "dashed"
+    )
+  }
+
+  p <- p +
     ggplot2::scale_fill_gradientn(
       colors = custom_ramp,
       values = scales::rescale(c(0, 0.9, 1.1, 1.9, 2.1, 2.5), from = c(0, 2.5)),
@@ -790,10 +854,9 @@ plot_stock_status <- function(data = NULL,
       labels = if(lang == "fr") c("0", "1.0 (PRL)", "2.0", "2.5+") else c("0", "1.0 (LRP)", "2.0", "2.5+"),
       guide = ggplot2::guide_colorbar(barheight = ggplot2::unit(0.4, "npc"))
     ) +
-    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = seq(1970, 2030, by = 5)) +
+    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = seq(1970, 2035, by = 5)) +
     ggplot2::scale_y_discrete(expand = c(0, 0)) +
-    ggplot2::labs(x = terms[[lang]][["xlab"]],
-                  y = terms[[lang]][["ylab"]]) +
+    ggplot2::labs(x = terms[[lang]][["xlab"]], y = terms[[lang]][["ylab"]]) +
     ggplot2::theme_bw(base_size = base_size) +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
@@ -803,7 +866,6 @@ plot_stock_status <- function(data = NULL,
       panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 1)
     )
 
-  # Optional Title Logic
   if (show_title) {
     p <- p + ggplot2::labs(title = terms[[lang]][["title"]]) +
       ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", hjust = 0.5, size = base_size * 1.1))
