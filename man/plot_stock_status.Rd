@@ -12,7 +12,7 @@ plot_stock_status(
   lang = "en",
   year_range = NULL,
   show_title = TRUE,
-  base_size = 14
+  base_size = 16
 )
 }
 \arguments{
@@ -43,19 +43,21 @@ A \code{ggplot2} object.
 }
 \description{
 Creates a standardized heatmap visualizing stock status over time.
-The plot includes colour coding to distinguish
-between different status zones. Features bilingual support, customizable year
-ranges, and the option to toggle the main title on and off.
+Features colour-coded status zones and a dashed contour line at the LRP
+threshold (1.0). Includes bilingual support (English/French) with an internal
+dictionary to ensure consistent Y-axis ordering regardless of the language selected.
 }
 \examples{
 \dontrun{
-# Standard plot with title
+library(EAgraphics)
+
+# Example 1: Standard plot with title in English
 plot_stock_status(lang = "en")
 
-# Plot without title for use in multi-panel figures or reports
+# Example 2: Plot without title for use in multi-panel figures or reports
 plot_stock_status(lang = "en", show_title = FALSE)
 
-#' # Plot without title and in french with year 1990-2025
-plot_stock_status(lang = "fr", year_range=c(1990,2025), show_title = FALSE)
+# Example 3: Plot without title and in french with year 1990-2025
+plot_stock_status(lang = "fr", year_range = c(1990, 2025), show_title = FALSE)
 }
 }
