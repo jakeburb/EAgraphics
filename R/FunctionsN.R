@@ -791,26 +791,36 @@ plot_stock_status <- function(data = NULL,
 
   # 2. Internal Translation Dictionary
   stock_dict <- c(
-    "Cod - 3Pn4RS"                = "Morue - 3Pn4RS",
-    "Shrimp-Sept-Iles"            = "Crevette-Sept-Iles",
-    "Shrimp-Estuaire"             = "Crevette-Estuaire",
-    "Shrimp-Esquiman"             = "Crevette-Esquiman",
-    "Shrimp-Anticosti"            = "Crevette-Anticosti",
-    "Herring - 4RSw Spring"       = "Hareng 4RSw printemps",
-    "Herring - 4RSw Fall"         = "Hareng 4RSw automne",
-    "Sebastes mentella - Unit 1"  = "Sebastes mentella - Unité 1",
-    "Sebastes fasciatus - Unit 1" = "Sebastes fasciatus- Unité 1",
-    "Mackerel"                    = "Maquereau",
-    "Greenland Halibut"           = "Flétan du Groenland"
+    "Northern shrimp-Anticosti"    = "Crevette nordique - Anticosti",
+    "Northern shrimp-Esquiman"     = "Crevette nordique - Esquiman",
+    "Northern shrimp-Estuary"      = "Crevette nordique - Estuaire",
+    "Northern shrimp-Sept-Iles"    = "Crevette nordique - Sept-Îles",
+    "Snow crab – sGSL"             = "Crabe des neiges - sGSL",
+    "Atlantic halibut - 4RST"      = "Flétan de l'Atlantique - 4RST",
+    "Greenland halibut - 4RST"     = "Flétan du Groenland - 4RST",
+    "Sebastes fasciatus - Unit1"   = "Sebastes fasciatus - Unité 1",
+    "Sebastes mentella - Unit1"    = "Sebastes mentella - Unité 1",
+    "Witch flounder - 4RST"        = "Plie grise - 4RST",
+    "Atlantic cod - 3Pn4RS"        = "Morue de l'Atlantique - 3Pn4RS",
+    "American plaice - 4T"         = "Plie canadienne - 4T",
+    "Atlantic cod - 4TVn"          = "Morue de l'Atlantique - 4TVn",
+    "White hake - 4T"              = "Merluche blanche - 4T",
+    "Winter flounder - 4T"         = "Plie rouge - 4T",
+    "Yellowtail flounder - 4T"     = "Limande à queue jaune - 4T",
+    "Atlantic mackerel"            = "Maquereau bleu",
+    "Atlantic herring - 4RSw Fall" = "Hareng de l'Atlantique - 4RSw automne",
+    "Atlantic herring - 4RSw Spring" = "Hareng de l'Atlantique - 4RSw printemps",
+    "Atlantic herring - 4TVn Fall" = "Hareng de l'Atlantique - 4TVn automne",
+    "Atlantic herring - 4TVn Spring" = "Hareng de l'Atlantique - 4TVn printemps"
   )
 
-  # 3. Translations for labels
   terms <- list(
     en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
            xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
     fr = c(title = "État des stocks par rapport au point de référence limite (PRL)",
            xlab = "Année", ylab = "Stock", leg = "État/PRL")
   )
+
 
   # 4. Processing & Initial Aggregation
   plot_df <- data |>
@@ -963,7 +973,7 @@ plot_stock_status_heatmap <- function(data = NULL,
     "Northern shrimp-Esquiman",
     "Northern shrimp-Estuary",
     "Northern shrimp-Sept-Iles",
-    "Snow crab – sGSL",
+    "Snow crab - sGSL",
     "Atlantic halibut - 4RST",
     "Greenland halibut - 4RST",
     "Sebastes fasciatus - Unit1",
@@ -996,24 +1006,23 @@ plot_stock_status_heatmap <- function(data = NULL,
     dplyr::summarize(val = mean(val, na.rm = TRUE), .groups = "drop")
 
   # 4. Translation Logic with Unicode Escapes (Safe for Accents)
-  # \u00E9 = é, \u00EE = î, \u00E0 = à, \u00E8 = è
   stock_dict <- c(
     "Northern shrimp-Anticosti"    = "Crevette nordique - Anticosti",
     "Northern shrimp-Esquiman"     = "Crevette nordique - Esquiman",
     "Northern shrimp-Estuary"      = "Crevette nordique - Estuaire",
-    "Northern shrimp-Sept-Iles"    = "Crevette nordique - Sept-\u00CEles",
-    "Snow crab - sGSL"        = "Crabe des neiges - sGSL",
-    "Atlantic halibut - 4RST"      = "Fl\u00E9tan de l'Atlantique - 4RST",
-    "Greenland halibut - 4RST"     = "Fl\u00E9tan du Groenland - 4RST",
-    "Sebastes fasciatus - Unit1"   = "Sebastes fasciatus - Unit\u00E9 1",
-    "Sebastes mentella - Unit1"    = "Sebastes mentella - Unit\u00E9 1",
+    "Northern shrimp-Sept-Iles"    = "Crevette nordique - Sept-Îles",
+    "Snow crab - sGSL"             = "Crabe des neiges - sGSL",
+    "Atlantic halibut - 4RST"      = "Flétan de l'Atlantique - 4RST",
+    "Greenland halibut - 4RST"     = "Flétan du Groenland - 4RST",
+    "Sebastes fasciatus - Unit1"   = "Sebastes fasciatus - Unité 1",
+    "Sebastes mentella - Unit1"    = "Sebastes mentella - Unité 1",
     "Witch flounder - 4RST"        = "Plie grise - 4RST",
     "Atlantic cod - 3Pn4RS"        = "Morue de l'Atlantique - 3Pn4RS",
     "American plaice - 4T"         = "Plie canadienne - 4T",
     "Atlantic cod - 4TVn"          = "Morue de l'Atlantique - 4TVn",
     "White hake - 4T"              = "Merluche blanche - 4T",
     "Winter flounder - 4T"         = "Plie rouge - 4T",
-    "Yellowtail flounder - 4T"     = "Limande \u00E0 queue jaune - 4T",
+    "Yellowtail flounder - 4T"     = "Limande à queue jaune - 4T",
     "Atlantic mackerel"            = "Maquereau bleu",
     "Atlantic herring - 4RSw Fall" = "Hareng de l'Atlantique - 4RSw automne",
     "Atlantic herring - 4RSw Spring" = "Hareng de l'Atlantique - 4RSw printemps",
@@ -1021,19 +1030,18 @@ plot_stock_status_heatmap <- function(data = NULL,
     "Atlantic herring - 4TVn Spring" = "Hareng de l'Atlantique - 4TVn printemps"
   )
 
+  terms <- list(
+    en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
+           xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
+    fr = c(title = "État des stocks par rapport au point de référence limite (PRL)",
+           xlab = "Année", ylab = "Stock", leg = "État/PRL")
+  )
+
   if (lang == "fr") {
     current_levels <- levels(df$stk)
     new_levels <- dplyr::recode(current_levels, !!!stock_dict)
     levels(df$stk) <- new_levels
   }
-
-  terms <- list(
-    en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
-           xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
-    fr = c(title = "\u00C9tat des stocks par rapport au point de r\u00E9f\u00E9rence limite (PRL)",
-           xlab = "Ann\u00E9e", ylab = "Stock", leg = "\u00C9tat/PRL")
-  )
-
   # 5. Build Plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = yr, y = stk, fill = val)) +
     ggplot2::geom_tile(color = "white", linewidth = 0.5) +
