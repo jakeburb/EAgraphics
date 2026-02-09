@@ -2,7 +2,7 @@
 % Please edit documentation in R/FunctionsN.R
 \name{plot_stock_status}
 \alias{plot_stock_status}
-\title{Plot Stock Status Relative to Limit Reference Point (LRP)}
+\title{Plot Stock Status Relative to Limit Reference Point (LRP) for Any Dataset}
 \usage{
 plot_stock_status(
   data = NULL,
