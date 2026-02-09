@@ -30,7 +30,9 @@ inter-annual variability from long-term ecosystem shifts.
 internal dictionaries and the rosettafish package
 (<https://github.com/pbs-assess/rosettafish>), EAgraphics automatically
 translates species names, region identifiers, and complex scientific
-units.
+units. Translations will need to be added to internal dictionaries when
+new terms or areas are used, therefore contact the package maintainer to
+add these as necessary (<Jacob.Burbank@dfo-mpo.gc.ca>)
 
 -Anomaly Visualization: Flexible functions for the computation and
 visualization of anomalies based on user-defined baseline periods,
@@ -61,4 +63,9 @@ devtools::install_github("your-username/EAgraphics")
 library(EAgraphics)
 ```
 
-## Dependencies
+## How To Use
+
+\##Cite as:
+
+Burbank, J., Duplisea, D.E. 2026. EAgraphic: An R Package for
+Visualizing Ecosystem Approaches to Fisheries

@@ -30,7 +30,7 @@ Initially developed as a visualization companion to the Gulf of St. Lawrence Eco
 
 -Integrated Trend Analysis: Simplified implementation of Generalized Additive Models (GAMs) and annual trend lines to distinguish inter-annual variability from long-term ecosystem shifts.
 
--Bilingual Reporting: Full support for English and French outputs. Using internal dictionaries and the rosettafish package (https://github.com/pbs-assess/rosettafish), EAgraphics automatically translates species names, region identifiers, and complex scientific units.
+-Bilingual Reporting: Full support for English and French outputs. Using internal dictionaries and the rosettafish package (https://github.com/pbs-assess/rosettafish), EAgraphics automatically translates species names, region identifiers, and complex scientific units. Translations will need to be added to internal dictionaries when new terms or areas are used, therefore contact the package maintainer to add these as necessary (Jacob.Burbank@dfo-mpo.gc.ca)
 
 -Anomaly Visualization: Flexible functions for the computation and visualization of anomalies based on user-defined baseline periods, essential for identifying significant environmental departures.
 
@@ -49,8 +49,12 @@ devtools::install_github("your-username/EAgraphics")
 library(EAgraphics)
 ```
 
-## How TO Use
+## How To Use
 
 
+
+## Citation for Package:
+
+Burbank, J., Duplisea, D.E. 2026. EAgraphic: An R Package for Visualizing Ecosystem Approaches to Fisheries Management. R package version 0.1 https://github.com/jakeburb/EAgraphics
 
 
