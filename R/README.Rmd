@@ -1,0 +1,56 @@
+---
+title: "README"
+author: "Jacob Burbank"
+date: "2026-02-05"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+# EAgraphics <img src="man/figures/logo.png" align="right" height="139" />
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+## Overview
+
+The EAgraphics package provides a suite of user-friendly functions designed to visualize data and indicators frequently utilized in Ecosystem Approaches (EA) to Fisheries Management.
+
+Initially developed as a visualization companion to the Gulf of St. Lawrence Ecosystem Approaches (gslea) R package (https://github.com/duplisea/gslea), EAgraphics is built to be flexible. While it integrates seamlessly with gslea data structures, it is equally capable of visualizing any EA-relevant datasets that follow standard long-format conventions.
+
+### Key Capabilities
+-Publication-Quality Figures: Standardized plotting for physical oceanography (temperature, ice dynamics), biological metrics (phytoplankton phenology, zooplankton abundance), and fisheries data.
+
+-Integrated Trend Analysis: Simplified implementation of Generalized Additive Models (GAMs) and annual trend lines to distinguish inter-annual variability from long-term ecosystem shifts.
+
+-Bilingual Reporting: Full support for English and French outputs. Using internal dictionaries and the rosettafish package (https://github.com/pbs-assess/rosettafish), EAgraphics automatically translates species names, region identifiers, and complex scientific units.
+
+-Anomaly Visualization: Flexible functions for the computation and visualization of anomalies based on user-defined baseline periods, essential for identifying significant environmental departures.
+
+-Fisheries Status Monitoring: Specialized heatmap visualizations designed to show stock status relative to Limit Reference Points (LRP), ensuring consistent stock ordering and clear threshold demarcations across languages.
+
+Why use EAgraphics?
+Ecosystem Approach data is often multi-faceted and spatially complex. This package reduces the "coding overhead" required to produce consistent figures across multiple indicators. Whether you are comparing sea surface temperature across different Ecosystem Assessment Regions (EARs) or assessing the status of multiple fish stocks simultaneously, EAgraphics ensures the output is standardized, reproducible, and ready for technical reports or peer-reviewed publications.
+
+## Installation
+
+You can install the package directly from github and explore the functions:
+
+```r
+install.packages("devtools")
+devtools::install_github("your-username/EAgraphics")
+library(EAgraphics)
+```
+
+## How TO Use
+
+
+
+
