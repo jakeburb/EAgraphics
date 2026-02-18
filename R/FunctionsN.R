@@ -253,7 +253,7 @@ plot_gslea_ice <- function(data, var, EARs = 0, groups = NULL, year_range = c(19
 
   p <- ggplot2::ggplot(plot_df, ggplot2::aes(x = year, y = value, color = ear_label))
 
-  # NEW: Add connecting lines
+  # Add connecting lines
   if (show_line) {
     p <- p + ggplot2::geom_line(alpha = 0.5, linewidth = 0.8)
   }
