@@ -1073,3 +1073,150 @@ plot_stock_status_heatmap <- function(data = NULL,
 
   return(p)
 }
+
+
+#' Plot Stacked Landings by Group
+#'
+#' @description
+#' Visualizes fisheries landings over time using a stacked area plot.
+#' Supports bilingual labeling (via an internal dictionary and \code{rosettafish}),
+#' custom color palettes, and adjustable text scaling.
+#' By default, groups are stacked as: Crustaceans (Top), Groundfish (Middle), Pelagics (Bottom).
+#'
+#' @param data A data frame containing landings.
+#' @param year_col Unquoted name of the year column. Defaults to \code{year}.
+#' @param group_col Unquoted name of the grouping column (e.g., species group). Defaults to \code{grp}.
+#' @param value_col Unquoted name of the landings value column. Defaults to \code{landings}.
+#' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
+#' @param year_range Numeric vector \code{c(start, end)} to filter the timeline.
+#' @param group_order Character vector defining the visual order from \strong{top to bottom}.
+#'   Defaults to \code{c("crustaceans", "groundfish", "pelagics")}.
+#' @param show_title Logical. Defaults to \code{FALSE}.
+#' @param col_palette Optional named character vector of colors.
+#' @param base_size Numeric. Base font size for the plot. Defaults to 14.
+#' @param xlab,ylab Optional strings to override default axis labels.
+#' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
+#'
+#' @return A \code{ggplot} object.
+#'
+#' @examples
+#' \dontrun{
+#' # Load your data
+#' landings_data <- read.csv("landings_by_group.csv")
+#'
+#' # 1. Basic plot with default order (Top: Crustaceans -> Middle: Groundfish -> Bottom: Pelagics)
+#' plot_landings_stacked(landings_data)
+#'
+#' # 2. French version, custom year range, and larger text scaling
+#' plot_landings_stacked(landings_data,
+#'                       lang = "fr",
+#'                       year_range = c(1990, 2023),
+#'                       base_size = 16)
+#'
+#' # 3. Custom stack order: Pelagics on top, Crustaceans on bottom
+#' plot_landings_stacked(landings_data,
+#'                       group_order = c("pelagics", "groundfish", "crustaceans"))
+#'
+#' # 4. Custom colour palette with rosettafish fallback
+#' my_pal <- c("Crustaceans" = "#8b0000",
+#'             "Groundfish"  = "#4682b4",
+#'             "Pelagics"    = "#2e8b57")
+#'
+#' plot_landings_stacked(landings_data, col_palette = my_pal)
+#' }
+#' @export
+plot_landings_stacked <- function(data,
+                                  year_col = year,
+                                  group_col = grp,
+                                  value_col = landings,
+                                  lang = "en",
+                                  year_range = NULL,
+                                  group_order = c("crustaceans", "groundfish", "pelagics"),
+                                  show_title = FALSE,
+                                  col_palette = NULL,
+                                  base_size = 14,
+                                  xlab = NULL,
+                                  ylab = NULL,
+                                  custom_theme = ggplot2::theme_bw()) {
+
+  # 1. Setup
+  yr_enquo  <- rlang::enquo(year_col)
+  grp_enquo <- rlang::enquo(group_col)
+  val_enquo <- rlang::enquo(value_col)
+
+  # 2. Local Dictionary
+  terms <- list(
+    en = c(title = "Fisheries Landings by Group", xlab = "Year", ylab = "Landings (t)", leg = "Group",
+           crustaceans = "Crustaceans", groundfish = "Groundfish", pelagics = "Pelagics"),
+    fr = c(title = "Débarquements de pêche par groupe", xlab = "Année", ylab = "Débarquements (t)", leg = "Groupe",
+           crustaceans = "Crustacés", groundfish = "Poissons de fond", pelagics = "Pélagiques")
+  )
+
+  get_term <- function(x, dictionary, language) {
+    if (x %in% names(dictionary)) return(dictionary[[x]])
+    if (requireNamespace("rosettafish", quietly = TRUE)) {
+      return(rosettafish::translate(x, lang = language))
+    }
+    return(x)
+  }
+
+  # 3. Data Prep
+  df <- data |>
+    dplyr::rename(yr = !!yr_enquo, grp = !!grp_enquo, val = !!val_enquo) |>
+    dplyr::filter(!is.na(val))
+
+  if (!is.null(year_range)) {
+    df <- df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
+  }
+
+  # 4. Critical Factor Ordering
+  # Level 1 will be the first item in group_order (default: crustaceans)
+  df$grp <- factor(as.character(df$grp), levels = group_order)
+
+  # Translate levels (preserving the integer order)
+  current_levs <- levels(df$grp)
+  translated_levs <- sapply(current_levs, get_term, dictionary = terms[[lang]], language = lang)
+  levels(df$grp) <- unname(translated_levs)
+
+  # 5. Colors
+  if (is.null(col_palette)) {
+    base_pal <- c(
+      "Crustaceans" = "#D55E00", "Crustacés" = "#D55E00",
+      "Groundfish"  = "#0072B2", "Poissons de fond" = "#0072B2",
+      "Pelagics"    = "#009E73", "Pélagiques" = "#009E73"
+    )
+    if (all(levels(df$grp) %in% names(base_pal))) {
+      col_palette <- base_pal
+    } else {
+      col_palette <- scales::hue_pal()(length(levels(df$grp)))
+      names(col_palette) <- levels(df$grp)
+    }
+  }
+
+  # 6. Build Plot
+  final_xlab <- if(!is.null(xlab)) xlab else get_term("xlab", terms[[lang]], lang)
+  final_ylab <- if(!is.null(ylab)) ylab else get_term("ylab", terms[[lang]], lang)
+
+  p <- ggplot2::ggplot(df, ggplot2::aes(x = yr, y = val, fill = grp)) +
+    # USE REVERSE STACK:
+    # This puts Level 1 (Crustaceans) at the TOP of the plot stack.
+    ggplot2::geom_area(alpha = 0.8, color = "white", linewidth = 0.3,
+                       position = ggplot2::position_stack(reverse = FALSE)) +
+    ggplot2::scale_fill_manual(values = col_palette) +
+    ggplot2::scale_x_continuous(expand = c(0, 0)) +
+    ggplot2::scale_y_continuous(labels = scales::comma, expand = ggplot2::expansion(mult = c(0, 0.15))) +
+    # LEGEND: Default (no reverse)
+    # This puts Level 1 (Crustaceans) at the TOP of the legend list.
+    ggplot2::labs(x = final_xlab, y = final_ylab, fill = get_term("leg", terms[[lang]], lang)) +
+    custom_theme +
+    ggplot2::theme(text = ggplot2::element_text(size = base_size),
+                   axis.title = ggplot2::element_text(face = "bold"),
+                   legend.position = "right")
+
+  if (show_title) {
+    p <- p + ggplot2::labs(title = get_term("title", terms[[lang]], lang)) +
+      ggplot2::theme(plot.title = ggplot2::element_text(face = "bold", hjust = 0.5))
+  }
+
+  return(p)
+}
