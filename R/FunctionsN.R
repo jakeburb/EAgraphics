@@ -1090,7 +1090,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Numeric vector \code{c(start, end)} to filter the timeline.
 #' @param group_order Character vector defining the visual order from \strong{top to bottom}.
-#'   Defaults to \code{c("crustaceans", "groundfish", "pelagics")}.
+#'   Defaults to \code{c("pelagics", "crustaceans", "groundfish")}.
 #' @param show_title Logical. Defaults to \code{FALSE}.
 #' @param col_palette Optional named character vector of colors.
 #' @param base_size Numeric. Base font size for the plot. Defaults to 14.
@@ -1104,7 +1104,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' # Load your data
 #' landings_data <- read.csv("landings_by_group.csv")
 #'
-#' # 1. Basic plot with default order (Top: Crustaceans -> Middle: Groundfish -> Bottom: Pelagics)
+#' # 1. Basic plot with default order (Top: Pelagics -> Middle: Crustaceans  -> Bottom: Groundfish)
 #' plot_landings_stacked(landings_data)
 #'
 #' # 2. French version, custom year range, and larger text scaling
