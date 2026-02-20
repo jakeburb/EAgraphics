@@ -11,7 +11,7 @@ plot_landings_stacked(
   value_col = landings,
   lang = "en",
   year_range = NULL,
-  group_order = c("crustaceans", "groundfish", "pelagics"),
+  group_order = c("pelagics", "crustaceans", "groundfish"),
   show_title = FALSE,
   col_palette = NULL,
   base_size = 14,
