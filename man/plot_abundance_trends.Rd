@@ -14,7 +14,7 @@ plot_abundance_trends(
   lang = "en",
   show_legend = TRUE,
   col_palette = NULL,
-  base_size = 14,
+  base_size = 16,
   line_width = 1.2,
   custom_theme = ggplot2::theme_bw()
 )
@@ -39,7 +39,7 @@ If \code{NULL}, all variables in the data are plotted.}
 
 \item{col_palette}{Optional character vector of colors.}
 
-\item{base_size}{Numeric. Base font size for the plot. Defaults to 14.}
+\item{base_size}{Numeric. Base font size for the plot. Defaults to 16.}
 
 \item{line_width}{Numeric. Thickness of the trend lines. Defaults to 1.2.}
 
@@ -52,14 +52,25 @@ A \code{ggplot} object.
 Visualizes trends in fish abundance. Designed for long-form data (gslea)
 with defaults that match the gslea structure (year, variable, value).
 Maps abbreviations like 'abft.n' to full names automatically and uses
-the standard package theme (theme_bw with full border).
+the standard package theme (theme_bw with full border and prominent points).
 }
 \examples{
 \dontrun{
 # 1. Plot Atlantic Bluefin Tuna (abft.n) with standard package theme
+# Note: The Y-axis will automatically expand 'abft.n' to 'Atlantic Bluefin Tuna'
 plot_abundance_trends(gslea_data, var = "abft.n")
 
-# 2. French version with specified year range
-plot_abundance_trends(gslea_data, var = "abft.n", lang = "fr", year_range = c(2000, 2024))
+# 2. French version with specified year range and no legend
+plot_abundance_trends(gslea_data,
+                      var = "abft.n",
+                      lang = "fr",
+                      year_range = c(2000, 2024),
+                      show_legend = FALSE)
+
+# 3. Customizing the visual weights
+plot_abundance_trends(gslea_data,
+                      var = "abft.n",
+                      line_width = 2,
+                      base_size = 16)
 }
 }
