@@ -1264,7 +1264,7 @@ plot_abundance_trends <- function(data,
                                   lang = "en",
                                   show_legend = TRUE,
                                   col_palette = NULL,
-                                  base_size = 14,
+                                  base_size = 16,
                                   line_width = 1.2,
                                   custom_theme = ggplot2::theme_bw()) {
 
