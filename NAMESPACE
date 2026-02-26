@@ -3,6 +3,7 @@
 export(calc_anomaly)
 export(plot_abundance_trends)
 export(plot_anomaly)
+export(plot_anomaly_comp)
 export(plot_gslea_ice)
 export(plot_gslea_plankton)
 export(plot_gslea_temperature)
