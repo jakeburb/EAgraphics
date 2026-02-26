@@ -16,13 +16,13 @@ plot_abundance_trends(
   col_palette = NULL,
   base_size = 14,
   line_width = 1.2,
-  custom_theme = ggplot2::theme_minimal()
+  custom_theme = ggplot2::theme_bw()
 )
 }
 \arguments{
 \item{data}{A data frame containing abundance data.}
 
-\item{var}{Character. The specific variable or species to pick out (e.g., "afbt.n").
+\item{var}{Character. The specific variable or species to pick out (e.g., "abft.n").
 If \code{NULL}, all variables in the data are plotted.}
 
 \item{year_range}{Numeric vector \code{c(start, end)} to filter the timeline.}
@@ -43,7 +43,7 @@ If \code{NULL}, all variables in the data are plotted.}
 
 \item{line_width}{Numeric. Thickness of the trend lines. Defaults to 1.2.}
 
-\item{custom_theme}{A ggplot2 theme. Defaults to \code{theme_minimal()}.}
+\item{custom_theme}{A ggplot2 theme. Defaults to \code{theme_bw()}.}
 }
 \value{
 A \code{ggplot} object.
@@ -51,15 +51,15 @@ A \code{ggplot} object.
 \description{
 Visualizes trends in fish abundance. Designed for long-form data (gslea)
 with defaults that match the gslea structure (year, variable, value).
-Maps abbreviations like 'afbt.n' to full names automatically and handles
-bilingual translation via rosettafish.
+Maps abbreviations like 'abft.n' to full names automatically and uses
+the standard package theme (theme_bw with full border).
 }
 \examples{
 \dontrun{
-# 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
-plot_abundance_trends(gslea_data, var = "afbt.n")
+# 1. Plot Atlantic Bluefin Tuna (abft.n) with standard package theme
+plot_abundance_trends(gslea_data, var = "abft.n")
 
-# 2. French version using rosettafish::en2fr() fallback
-plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
+# 2. French version with specified year range
+plot_abundance_trends(gslea_data, var = "abft.n", lang = "fr", year_range = c(2000, 2024))
 }
 }
