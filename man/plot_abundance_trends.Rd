@@ -9,8 +9,8 @@ plot_abundance_trends(
   var = NULL,
   year_range = NULL,
   year_col = year,
-  value_col = abundance,
-  group_col = species,
+  value_col = value,
+  group_col = variable,
   lang = "en",
   show_legend = TRUE,
   col_palette = NULL,
@@ -20,18 +20,18 @@ plot_abundance_trends(
 )
 }
 \arguments{
-\item{data}{A data frame containing abundance data (e.g., gslea long-form).}
+\item{data}{A data frame containing abundance data.}
 
-\item{var}{Character. The specific variable or species to pick out
-from the \code{group_col}. If \code{NULL}, all variables are plotted.}
+\item{var}{Character. The specific variable or species to pick out (e.g., "afbt.n").
+If \code{NULL}, all variables in the data are plotted.}
 
 \item{year_range}{Numeric vector \code{c(start, end)} to filter the timeline.}
 
 \item{year_col}{Unquoted name of the year column. Defaults to \code{year}.}
 
-\item{value_col}{Unquoted name of the abundance value column. Defaults to \code{abundance}.}
+\item{value_col}{Unquoted name of the value column. Defaults to \code{value}.}
 
-\item{group_col}{Unquoted name of the grouping column. Defaults to \code{species}.}
+\item{group_col}{Unquoted name of the grouping/variable column. Defaults to \code{variable}.}
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
@@ -50,21 +50,16 @@ A \code{ggplot} object.
 }
 \description{
 Visualizes trends in fish abundance. Designed for long-form data (gslea)
-with options to filter by a specific variable (species) and year range.
-The Y-axis label automatically updates to include the variable name.
+with defaults that match the gslea structure (year, variable, value).
+Maps abbreviations like 'afbt.n' to full names automatically. NOTE MUST ADD ADDITIONAL ABBREVIATIONS AS NEEDED
 }
 \examples{
 \dontrun{
-# 1. Plot specific species for a specific timeframe
-plot_abundance_trends(gslea_data,
-                      var = "Atlantic Bluefin Tuna",
-                      year_range = c(2010, 2023))
+# 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
+# The Y-axis will automatically show the full professional name.
+plot_abundance_trends(gslea_data, var = "afbt.n")
 
-# 2. French version, no legend, zoomed in
-plot_abundance_trends(gslea_data,
-                      var = "Atlantic Bluefin Tuna",
-                      year_range = c(2000, 2020),
-                      lang = "fr",
-                      show_legend = FALSE)
+# 2. French version (displays "Thon rouge de l'Atlantique")
+plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
 }
 }
