@@ -1227,7 +1227,8 @@ plot_landings_stacked <- function(data,
 #' @description
 #' Visualizes trends in fish abundance. Designed for long-form data (gslea)
 #' with defaults that match the gslea structure (year, variable, value).
-#' Maps abbreviations like 'afbt.n' to full names automatically. NOTE MUST ADD ADDITIONAL ABBREVIATIONS AS NEEDED
+#' Maps abbreviations like 'afbt.n' to full names automatically and handles
+#' bilingual translation via rosettafish.
 #'
 #' @param data A data frame containing abundance data.
 #' @param var Character. The specific variable or species to pick out (e.g., "afbt.n").
@@ -1248,10 +1249,9 @@ plot_landings_stacked <- function(data,
 #' @examples
 #' \dontrun{
 #' # 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
-#' # The Y-axis will automatically show the full professional name.
 #' plot_abundance_trends(gslea_data, var = "afbt.n")
 #'
-#' # 2. French version (displays "Thon rouge de l'Atlantique")
+#' # 2. French version using rosettafish::en2fr() fallback
 #' plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
 #' }
 #' @export
@@ -1273,21 +1273,23 @@ plot_abundance_trends <- function(data,
   val_enquo <- rlang::enquo(value_col)
   grp_enquo <- rlang::enquo(group_col)
 
-  # 2. Internal Dictionary (Updated with Abbreviation)
+  # 2. Internal Dictionary
   terms <- list(
     en = c(xlab = "Year", ylab_suffix = "Abundance Index", leg = "Variable",
-           "afbt.n" = "Atlantic Bluefin Tuna",
-           "atlantic bluefin tuna" = "Atlantic Bluefin Tuna"),
+           "afbt.n" = "Atlantic Bluefin Tuna"),
     fr = c(xlab = "Année", ylab_suffix = "Indice d'abondance", leg = "Variable",
-           "afbt.n" = "Thon rouge de l'Atlantique",
-           "atlantic bluefin tuna" = "Thon rouge de l'Atlantique")
+           "afbt.n" = "Thon rouge de l'Atlantique")
   )
 
   get_term <- function(x, dictionary, language) {
     clean_x <- tolower(trimws(as.character(x)))
+
+    # Check internal dictionary first
     if (clean_x %in% names(dictionary)) return(dictionary[[clean_x]])
-    if (requireNamespace("rosettafish", quietly = TRUE)) {
-      return(rosettafish::translate(x, lang = language))
+
+    # Fallback to rosettafish: use en2fr for French
+    if (language == "fr" && requireNamespace("rosettafish", quietly = TRUE)) {
+      return(rosettafish::en2fr(x))
     }
     return(x)
   }
@@ -1296,10 +1298,8 @@ plot_abundance_trends <- function(data,
   df <- data |>
     dplyr::rename(yr = !!yr_enquo, val = !!val_enquo, grp = !!grp_enquo)
 
-  # Filter for the var if provided
   if (!is.null(var)) {
     df <- df |> dplyr::filter(tolower(grp) == tolower(var))
-
     if (nrow(df) == 0) {
       col_nm <- rlang::as_label(grp_enquo)
       stop(paste0("Variable '", var, "' not found in column '", col_nm, "'. ",
@@ -1307,7 +1307,6 @@ plot_abundance_trends <- function(data,
     }
   }
 
-  # Filter for Year Range
   if (!is.null(year_range)) {
     df <- df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
   }
@@ -1342,7 +1341,7 @@ plot_abundance_trends <- function(data,
       panel.grid.minor = ggplot2::element_blank()
     )
 
-  # 6. Colors & Legend Toggle
+  # 6. Colors & Legend
   if (!is.null(col_palette)) {
     p <- p + ggplot2::scale_color_manual(values = col_palette)
   } else {

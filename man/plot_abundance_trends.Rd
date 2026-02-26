@@ -51,15 +51,15 @@ A \code{ggplot} object.
 \description{
 Visualizes trends in fish abundance. Designed for long-form data (gslea)
 with defaults that match the gslea structure (year, variable, value).
-Maps abbreviations like 'afbt.n' to full names automatically. NOTE MUST ADD ADDITIONAL ABBREVIATIONS AS NEEDED
+Maps abbreviations like 'afbt.n' to full names automatically and handles
+bilingual translation via rosettafish.
 }
 \examples{
 \dontrun{
 # 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
-# The Y-axis will automatically show the full professional name.
 plot_abundance_trends(gslea_data, var = "afbt.n")
 
-# 2. French version (displays "Thon rouge de l'Atlantique")
+# 2. French version using rosettafish::en2fr() fallback
 plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
 }
 }
