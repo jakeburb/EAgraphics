@@ -1225,22 +1225,24 @@ plot_landings_stacked <- function(data,
 #' Plot Fish Abundance Trends
 #'
 #' @description
-#' Visualizes trends in fish abundance. Designed for long-form data (gslea)
-#' with defaults that match the gslea structure (year, variable, value).
-#' Maps abbreviations like 'abft.n' to full names automatically and uses
-#' the standard package theme (theme_bw with full border and prominent points).
+#' Visualizes trends in fish abundance (e.g., biomass or density) over time.
+#' Designed to handle long-form data (gslea) by allowing users to pick out
+#' a specific variable (e.g., a species name) from the data. The Y-axis label
+#' automatically updates to include the variable name.
 #'
-#' @param data A data frame containing abundance data.
-#' @param var Character. The specific variable or species to pick out (e.g., "abft.n").
-#'   If \code{NULL}, all variables in the data are plotted.
+#' @param data A data frame containing abundance data (e.g., gslea long-form).
+#' @param var Character. The specific variable or species to pick out
+#'   from the \code{group_col} (e.g., "abft.n"). If \code{NULL},
+#'   all variables in the data are plotted.
 #' @param year_range Numeric vector \code{c(start, end)} to filter the timeline.
+#' @param ylim Numeric vector \code{c(min, max)} for the Y-axis. Defaults to \code{c(0, NA)}.
 #' @param year_col Unquoted name of the year column. Defaults to \code{year}.
 #' @param value_col Unquoted name of the value column. Defaults to \code{value}.
-#' @param group_col Unquoted name of the grouping/variable column. Defaults to \code{variable}.
+#' @param group_col Unquoted name of the grouping column. Defaults to \code{variable}.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param show_legend Logical. Whether to display the legend. Defaults to \code{TRUE}.
 #' @param col_palette Optional character vector of colors.
-#' @param base_size Numeric. Base font size for the plot. Defaults to 16.
+#' @param base_size Numeric. Base font size for the plot. Defaults to 14.
 #' @param line_width Numeric. Thickness of the trend lines. Defaults to 1.2.
 #' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
 #'
@@ -1248,34 +1250,25 @@ plot_landings_stacked <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' # 1. Plot Atlantic Bluefin Tuna (abft.n) with standard package theme
-#' # Note: The Y-axis will automatically expand 'abft.n' to 'Atlantic Bluefin Tuna'
+#' # 1. Plot specific species from gslea data (Dynamic Y-axis label)
 #' plot_abundance_trends(gslea_data, var = "abft.n")
 #'
-#' # 2. French version with specified year range and no legend
-#' plot_abundance_trends(gslea_data,
-#'                       var = "abft.n",
-#'                       lang = "fr",
-#'                       year_range = c(2000, 2024),
-#'                       show_legend = FALSE)
+#' # 2. French version, specific for Atlantic Bluefin Tuna
+#' plot_abundance_trends(gslea_data, lang = "fr", show_legend = FALSE)
 #'
-#' # 3. Customizing the visual weights
-#' plot_abundance_trends(gslea_data,
-#'                       var = "abft.n",
-#'                       line_width = 2,
-#'                       base_size = 16)
 #' }
 #' @export
 plot_abundance_trends <- function(data,
                                   var = NULL,
                                   year_range = NULL,
+                                  ylim = c(0, NA),
                                   year_col = year,
                                   value_col = value,
                                   group_col = variable,
                                   lang = "en",
                                   show_legend = TRUE,
                                   col_palette = NULL,
-                                  base_size = 16,
+                                  base_size = 14,
                                   line_width = 1.2,
                                   custom_theme = ggplot2::theme_bw()) {
 
@@ -1284,7 +1277,7 @@ plot_abundance_trends <- function(data,
   val_enquo <- rlang::enquo(value_col)
   grp_enquo <- rlang::enquo(group_col)
 
-  # 2. Internal Dictionary (abft.n mapped to professional names)
+  # 2. Internal Dictionary
   terms <- list(
     en = c(xlab = "Year", ylab_suffix = "Abundance Index", leg = "Variable",
            "abft.n" = "Atlantic Bluefin Tuna"),
@@ -1297,7 +1290,6 @@ plot_abundance_trends <- function(data,
     if (clean_x %in% names(dictionary)) return(dictionary[[clean_x]])
 
     if (language == "fr" && requireNamespace("rosettafish", quietly = TRUE)) {
-      # Updated to use en2fr as translate is not exported
       return(rosettafish::en2fr(x))
     }
     return(x)
@@ -1307,8 +1299,10 @@ plot_abundance_trends <- function(data,
   df <- data |>
     dplyr::rename(yr = !!yr_enquo, val = !!val_enquo, grp = !!grp_enquo)
 
+  # Filter for the var if provided
   if (!is.null(var)) {
     df <- df |> dplyr::filter(tolower(grp) == tolower(var))
+
     if (nrow(df) == 0) {
       col_nm <- rlang::as_label(grp_enquo)
       stop(paste0("Variable '", var, "' not found in column '", col_nm, "'. ",
@@ -1316,6 +1310,7 @@ plot_abundance_trends <- function(data,
     }
   }
 
+  # Filter for Year Range
   if (!is.null(year_range)) {
     df <- df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
   }
@@ -1335,10 +1330,13 @@ plot_abundance_trends <- function(data,
   # 5. Build Plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = yr, y = val, color = grp, group = grp)) +
     ggplot2::geom_line(linewidth = line_width) +
-    # Prominent points to ensure data visibility
+    # High-visibility points
     ggplot2::geom_point(size = line_width * 2.5) +
     ggplot2::scale_x_continuous(expand = c(0.02, 0.02)) +
-    ggplot2::scale_y_continuous(labels = scales::comma, expand = ggplot2::expansion(mult = c(0, 0.1))) +
+    # Force Y to start at 0 by default, allow override
+    ggplot2::scale_y_continuous(labels = scales::comma,
+                                limits = ylim,
+                                expand = ggplot2::expansion(mult = c(0, 0.1))) +
     ggplot2::labs(
       x = get_term("xlab", terms[[lang]], lang),
       y = dynamic_ylab,
@@ -1348,12 +1346,11 @@ plot_abundance_trends <- function(data,
     ggplot2::theme(
       text = ggplot2::element_text(size = base_size),
       axis.title = ggplot2::element_text(face = "bold"),
-      # Full box border to match other package plots
       panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 1),
       panel.grid.minor = ggplot2::element_blank()
     )
 
-  # 6. Colors & Legend
+  # 6. Colors & Legend Toggle
   if (!is.null(col_palette)) {
     p <- p + ggplot2::scale_color_manual(values = col_palette)
   } else {
