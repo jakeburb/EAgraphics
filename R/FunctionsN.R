@@ -1227,11 +1227,11 @@ plot_landings_stacked <- function(data,
 #' @description
 #' Visualizes trends in fish abundance. Designed for long-form data (gslea)
 #' with defaults that match the gslea structure (year, variable, value).
-#' Maps abbreviations like 'afbt.n' to full names automatically and handles
-#' bilingual translation via rosettafish.
+#' Maps abbreviations like 'abft.n' to full names automatically and uses
+#' the standard package theme (theme_bw with full border).
 #'
 #' @param data A data frame containing abundance data.
-#' @param var Character. The specific variable or species to pick out (e.g., "afbt.n").
+#' @param var Character. The specific variable or species to pick out (e.g., "abft.n").
 #'   If \code{NULL}, all variables in the data are plotted.
 #' @param year_range Numeric vector \code{c(start, end)} to filter the timeline.
 #' @param year_col Unquoted name of the year column. Defaults to \code{year}.
@@ -1242,17 +1242,17 @@ plot_landings_stacked <- function(data,
 #' @param col_palette Optional character vector of colors.
 #' @param base_size Numeric. Base font size for the plot. Defaults to 14.
 #' @param line_width Numeric. Thickness of the trend lines. Defaults to 1.2.
-#' @param custom_theme A ggplot2 theme. Defaults to \code{theme_minimal()}.
+#' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
 #'
 #' @return A \code{ggplot} object.
 #'
 #' @examples
 #' \dontrun{
-#' # 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
-#' plot_abundance_trends(gslea_data, var = "afbt.n")
+#' # 1. Plot Atlantic Bluefin Tuna (abft.n) with standard package theme
+#' plot_abundance_trends(gslea_data, var = "abft.n")
 #'
-#' # 2. French version using rosettafish::en2fr() fallback
-#' plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
+#' # 2. French version with specified year range
+#' plot_abundance_trends(gslea_data, var = "abft.n", lang = "fr", year_range = c(2000, 2024))
 #' }
 #' @export
 plot_abundance_trends <- function(data,
@@ -1264,30 +1264,27 @@ plot_abundance_trends <- function(data,
                                   lang = "en",
                                   show_legend = TRUE,
                                   col_palette = NULL,
-                                  base_size = 14,
+                                  base_size = 16,
                                   line_width = 1.2,
-                                  custom_theme = ggplot2::theme_minimal()) {
+                                  custom_theme = ggplot2::theme_bw()) {
 
   # 1. Setup & Mapping
   yr_enquo  <- rlang::enquo(year_col)
   val_enquo <- rlang::enquo(value_col)
   grp_enquo <- rlang::enquo(group_col)
 
-  # 2. Internal Dictionary
+  # 2. Internal Dictionary (Corrected to abft.n)
   terms <- list(
     en = c(xlab = "Year", ylab_suffix = "Abundance Index", leg = "Variable",
-           "afbt.n" = "Atlantic Bluefin Tuna"),
+           "abft.n" = "Atlantic Bluefin Tuna"),
     fr = c(xlab = "Année", ylab_suffix = "Indice d'abondance", leg = "Variable",
-           "afbt.n" = "Thon rouge de l'Atlantique")
+           "abft.n" = "Thon rouge de l'Atlantique")
   )
 
   get_term <- function(x, dictionary, language) {
     clean_x <- tolower(trimws(as.character(x)))
-
-    # Check internal dictionary first
     if (clean_x %in% names(dictionary)) return(dictionary[[clean_x]])
 
-    # Fallback to rosettafish: use en2fr for French
     if (language == "fr" && requireNamespace("rosettafish", quietly = TRUE)) {
       return(rosettafish::en2fr(x))
     }
@@ -1327,8 +1324,8 @@ plot_abundance_trends <- function(data,
   p <- ggplot2::ggplot(df, ggplot2::aes(x = yr, y = val, color = grp, group = grp)) +
     ggplot2::geom_line(linewidth = line_width) +
     ggplot2::geom_point(size = line_width * 1.5) +
-    ggplot2::scale_x_continuous(breaks = scales::pretty_breaks()) +
-    ggplot2::scale_y_continuous(labels = scales::comma) +
+    ggplot2::scale_x_continuous(expand = c(0.02, 0.02)) +
+    ggplot2::scale_y_continuous(labels = scales::comma, expand = ggplot2::expansion(mult = c(0, 0.1))) +
     ggplot2::labs(
       x = get_term("xlab", terms[[lang]], lang),
       y = dynamic_ylab,
@@ -1338,6 +1335,8 @@ plot_abundance_trends <- function(data,
     ggplot2::theme(
       text = ggplot2::element_text(size = base_size),
       axis.title = ggplot2::element_text(face = "bold"),
+      # Ensures the "Full Box" look consistent with your other plots
+      panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 1),
       panel.grid.minor = ggplot2::element_blank()
     )
 
