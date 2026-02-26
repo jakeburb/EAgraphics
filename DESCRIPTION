@@ -21,7 +21,7 @@ Depends:
     mgcv,
     R (>= 3.5)
 Remotes:
-	Github::duplisea/gslea
+	Github::duplisea/gslea,
 	GitHub::pbs-assess/rosettafish
 Encoding: UTF-8
 LazyData: true

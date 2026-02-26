@@ -45,7 +45,7 @@ You can install the package directly from github and explore the functions:
 
 ```r
 install.packages("devtools")
-devtools::install_github("your-username/EAgraphics")
+devtools::install_github("jakeburb/EAgraphics")
 library(EAgraphics)
 ```
 
