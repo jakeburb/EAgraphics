@@ -1226,16 +1226,16 @@ plot_landings_stacked <- function(data,
 #'
 #' @description
 #' Visualizes trends in fish abundance. Designed for long-form data (gslea)
-#' with options to filter by a specific variable (species) and year range.
-#' The Y-axis label automatically updates to include the variable name.
+#' with defaults that match the gslea structure (year, variable, value).
+#' Maps abbreviations like 'afbt.n' to full names automatically. NOTE MUST ADD ADDITIONAL ABBREVIATIONS AS NEEDED
 #'
-#' @param data A data frame containing abundance data (e.g., gslea long-form).
-#' @param var Character. The specific variable or species to pick out
-#'   from the \code{group_col}. If \code{NULL}, all variables are plotted.
+#' @param data A data frame containing abundance data.
+#' @param var Character. The specific variable or species to pick out (e.g., "afbt.n").
+#'   If \code{NULL}, all variables in the data are plotted.
 #' @param year_range Numeric vector \code{c(start, end)} to filter the timeline.
 #' @param year_col Unquoted name of the year column. Defaults to \code{year}.
-#' @param value_col Unquoted name of the abundance value column. Defaults to \code{abundance}.
-#' @param group_col Unquoted name of the grouping column. Defaults to \code{species}.
+#' @param value_col Unquoted name of the value column. Defaults to \code{value}.
+#' @param group_col Unquoted name of the grouping/variable column. Defaults to \code{variable}.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param show_legend Logical. Whether to display the legend. Defaults to \code{TRUE}.
 #' @param col_palette Optional character vector of colors.
@@ -1247,25 +1247,20 @@ plot_landings_stacked <- function(data,
 #'
 #' @examples
 #' \dontrun{
-#' # 1. Plot specific species for a specific timeframe
-#' plot_abundance_trends(gslea_data,
-#'                       var = "Atlantic Bluefin Tuna",
-#'                       year_range = c(2010, 2023))
+#' # 1. Plot Atlantic Bluefin Tuna using its abbreviation 'afbt.n'
+#' # The Y-axis will automatically show the full professional name.
+#' plot_abundance_trends(gslea_data, var = "afbt.n")
 #'
-#' # 2. French version, no legend, zoomed in
-#' plot_abundance_trends(gslea_data,
-#'                       var = "Atlantic Bluefin Tuna",
-#'                       year_range = c(2000, 2020),
-#'                       lang = "fr",
-#'                       show_legend = FALSE)
+#' # 2. French version (displays "Thon rouge de l'Atlantique")
+#' plot_abundance_trends(gslea_data, var = "afbt.n", lang = "fr")
 #' }
 #' @export
 plot_abundance_trends <- function(data,
                                   var = NULL,
                                   year_range = NULL,
                                   year_col = year,
-                                  value_col = abundance,
-                                  group_col = species,
+                                  value_col = value,
+                                  group_col = variable,
                                   lang = "en",
                                   show_legend = TRUE,
                                   col_palette = NULL,
@@ -1278,18 +1273,19 @@ plot_abundance_trends <- function(data,
   val_enquo <- rlang::enquo(value_col)
   grp_enquo <- rlang::enquo(group_col)
 
-  # 2. Internal Dictionary
+  # 2. Internal Dictionary (Updated with Abbreviation)
   terms <- list(
     en = c(xlab = "Year", ylab_suffix = "Abundance Index", leg = "Variable",
+           "afbt.n" = "Atlantic Bluefin Tuna",
            "atlantic bluefin tuna" = "Atlantic Bluefin Tuna"),
     fr = c(xlab = "Année", ylab_suffix = "Indice d'abondance", leg = "Variable",
+           "afbt.n" = "Thon rouge de l'Atlantique",
            "atlantic bluefin tuna" = "Thon rouge de l'Atlantique")
   )
 
   get_term <- function(x, dictionary, language) {
     clean_x <- tolower(trimws(as.character(x)))
     if (clean_x %in% names(dictionary)) return(dictionary[[clean_x]])
-
     if (requireNamespace("rosettafish", quietly = TRUE)) {
       return(rosettafish::translate(x, lang = language))
     }
