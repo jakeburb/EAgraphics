@@ -1214,7 +1214,7 @@ plot_landings_stacked <- function(data,
                        position = ggplot2::position_stack(reverse = FALSE)) +
     ggplot2::scale_fill_manual(values = col_palette) +
     ggplot2::scale_x_continuous(expand = c(0, 0)) +
-    ggplot2::scale_y_continuous(labels = scales::comma, expand = ggplot2::expansion(mult = c(0, 0.15))) +
+    ggplot2::scale_y_continuous(labels = scales::comma, expand = ggplot2::expansion(mult = c(0, 0.15)),breaks = y_breaks) +
     # LEGEND: Default (no reverse)
     # This puts Level 1 (Crustaceans) at the TOP of the legend list.
     ggplot2::labs(x = final_xlab, y = final_ylab, fill = get_term("leg", terms[[lang]], lang)) +
