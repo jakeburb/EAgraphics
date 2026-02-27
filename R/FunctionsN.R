@@ -1161,8 +1161,8 @@ plot_landings_stacked <- function(data,
 
   get_term <- function(x, dictionary, language) {
     if (x %in% names(dictionary)) return(dictionary[[x]])
-    if (requireNamespace("rosettafish", quietly = TRUE)) {
-      return(rosettafish::translate(x, lang = language))
+    if (language == "fr" && requireNamespace("rosettafish", quietly = TRUE)) {
+      return(rosettafish::en2fr(x))
     }
     return(x)
   }
