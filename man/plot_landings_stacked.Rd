@@ -17,6 +17,7 @@ plot_landings_stacked(
   base_size = 14,
   xlab = NULL,
   ylab = NULL,
+  y_breaks = ggplot2::waiver(),
   custom_theme = ggplot2::theme_bw()
 )
 }
@@ -43,6 +44,9 @@ Defaults to \code{c("pelagics", "crustaceans", "groundfish")}.}
 \item{base_size}{Numeric. Base font size for the plot. Defaults to 14.}
 
 \item{xlab, ylab}{Optional strings to override default axis labels.}
+
+\item{y_breaks}{Optional numeric vector for y-axis tick marks.
+Defaults to \code{ggplot2::waiver()} (automatic).}
 
 \item{custom_theme}{A ggplot2 theme. Defaults to \code{theme_bw()}.}
 }
