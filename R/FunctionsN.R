@@ -1102,6 +1102,8 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' @param col_palette Optional named character vector of colors.
 #' @param base_size Numeric. Base font size for the plot. Defaults to 14.
 #' @param xlab,ylab Optional strings to override default axis labels.
+#' @param y_breaks Optional numeric vector for y-axis tick marks.
+#'        Defaults to \code{ggplot2::waiver()} (automatic).
 #' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
 #'
 #' @return A \code{ggplot} object.
@@ -1144,6 +1146,7 @@ plot_landings_stacked <- function(data,
                                   base_size = 14,
                                   xlab = NULL,
                                   ylab = NULL,
+                                  y_breaks = ggplot2::waiver(),
                                   custom_theme = ggplot2::theme_bw()) {
 
   # 1. Setup
