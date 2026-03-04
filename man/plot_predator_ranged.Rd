@@ -20,31 +20,29 @@ plot_predator_ranged(
 )
 }
 \arguments{
-\item{data}{A data frame containing predator abundance data. Defaults to \code{gslea::EA.data}.}
+\item{data}{A data frame. Defaults to \code{gslea::EA.data}.}
 
-\item{year_col}{Unquoted name of the year column. Defaults to \code{year}.}
+\item{year_col}{Unquoted year column. Defaults to \code{year}.}
 
-\item{var_col}{Unquoted name of the variable/species column. Defaults to \code{variable}.}
+\item{var_col}{Unquoted variable column. Defaults to \code{variable}.}
 
-\item{val_col}{Unquoted name of the abundance value column. Defaults to \code{value}.}
+\item{val_col}{Unquoted value column. Defaults to \code{value}.}
 
-\item{year_range}{Numeric vector \code{c(start, end)} to filter the timeline. Defaults to \code{NULL} (all years).}
+\item{year_range}{Numeric vector \code{c(start, end)}.}
 
-\item{lang}{Language for labels and species names: \code{"en"} (default) or \code{"fr"}.}
+\item{lang}{Language: \code{"en"} (default) or \code{"fr"}.}
 
-\item{show_legend}{Logical. Whether to display the legend. Defaults to \code{TRUE}.}
+\item{show_legend}{Logical. Defaults to \code{TRUE}.}
 
-\item{legend_position}{Position of the legend. Can be a keyword (\code{"bottom"}, \code{"right"}, \code{"left"})
-or numeric coordinates \code{c(x, y)} for placement inside the plot. Defaults to \code{c(0.05, 0.95)} (top-left).}
+\item{legend_position}{Position of the legend. Defaults to \code{c(0.05, 0.95)}.}
 
-\item{y_label}{Optional string to override the default Y-axis label.}
+\item{y_label}{Optional string to override Y-axis label.}
 
-\item{base_size}{Numeric. Base font size for the plot. Defaults to \code{14}.}
+\item{base_size}{Numeric. Defaults to \code{14}.}
 
-\item{palette}{Optional character vector of colors. If \code{NULL}, a default colorblind-friendly palette is used.}
+\item{palette}{Optional color vector.}
 
-\item{species_metadata}{Optional data frame with columns \code{variable}, \code{en}, and \code{fr}
-to map internal codes to common names. If \code{NULL}, uses internal defaults for Seals, Gannets, and Tuna.}
+\item{species_metadata}{Optional mapping data frame.}
 }
 \value{
 A \code{ggplot} object.
@@ -58,28 +56,8 @@ top-left inside the plot area for a clean, publication-ready look.
 }
 \examples{
 \dontrun{
-# 1. Default plot using gslea::EA.data (Top-left legend)
+# English and French will have identical legend orders (Seals -> Gannets -> Tuna)
 plot_predator_ranged(lang = "en")
-
-# 2. French version with a specific year range and legend at the bottom
-plot_predator_ranged(lang = "fr",
-                     year_range = c(2000, 2024),
-                     legend_position = "bottom")
-
-# 3. Using external data with custom column names
-my_data <- read.csv("my_predators.csv")
-my_meta <- data.frame(
-  variable = c("shark_01", "whale_01"),
-  en = c("White Shark", "Minke Whale"),
-  fr = c("Grand requin blanc", "Petit rorqual")
-)
-plot_predator_ranged(data = my_data,
-                     year_col = Year,
-                     var_col = spec_code,
-                     val_col = count,
-                     species_metadata = my_meta)
-
-# 4. Adjusting legend to top-right inside the plot
-plot_predator_ranged(legend_position = c(0.75, 0.95))
+plot_predator_ranged(lang = "fr")
 }
 }
