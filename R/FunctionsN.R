@@ -1373,3 +1373,170 @@ plot_abundance_trends <- function(data,
 
   return(p)
 }
+
+#' Plot Ranged Predator Abundance
+#'
+#' @description
+#' Visualizes the relative abundance trends of key predators using a "ranged" (Min-Max)
+#' normalization: \eqn{(Value - Min) / (Max - Min)}. This allows comparison of species
+#' with different absolute population sizes. The legend automatically displays the
+#' original minimum and maximum values for context. The legend defaults to the
+#' top-left inside the plot area for a clean, publication-ready look.
+#'
+#' @param data A data frame containing predator abundance data. Defaults to \code{gslea::EA.data}.
+#' @param year_col Unquoted name of the year column. Defaults to \code{year}.
+#' @param var_col Unquoted name of the variable/species column. Defaults to \code{variable}.
+#' @param val_col Unquoted name of the abundance value column. Defaults to \code{value}.
+#' @param year_range Numeric vector \code{c(start, end)} to filter the timeline. Defaults to \code{NULL} (all years).
+#' @param lang Language for labels and species names: \code{"en"} (default) or \code{"fr"}.
+#' @param show_legend Logical. Whether to display the legend. Defaults to \code{TRUE}.
+#' @param legend_position Position of the legend. Can be a keyword (\code{"bottom"}, \code{"right"}, \code{"left"})
+#'        or numeric coordinates \code{c(x, y)} for placement inside the plot. Defaults to \code{c(0.05, 0.95)} (top-left).
+#' @param y_label Optional string to override the default Y-axis label.
+#' @param base_size Numeric. Base font size for the plot. Defaults to \code{14}.
+#' @param palette Optional character vector of colors. If \code{NULL}, a default colorblind-friendly palette is used.
+#' @param species_metadata Optional data frame with columns \code{variable}, \code{en}, and \code{fr}
+#'        to map internal codes to common names. If \code{NULL}, uses internal defaults for Seals, Gannets, and Tuna.
+#'
+#' @return A \code{ggplot} object.
+#'
+#' @examples
+#' \dontrun{
+#' # 1. Default plot using gslea::EA.data (Top-left legend)
+#' plot_predator_ranged(lang = "en")
+#'
+#' # 2. French version with a specific year range and legend at the bottom
+#' plot_predator_ranged(lang = "fr",
+#'                      year_range = c(2000, 2024),
+#'                      legend_position = "bottom")
+#'
+#' # 3. Using external data with custom column names
+#' my_data <- read.csv("my_predators.csv")
+#' my_meta <- data.frame(
+#'   variable = c("shark_01", "whale_01"),
+#'   en = c("White Shark", "Minke Whale"),
+#'   fr = c("Grand requin blanc", "Petit rorqual")
+#' )
+#' plot_predator_ranged(data = my_data,
+#'                      year_col = Year,
+#'                      var_col = spec_code,
+#'                      val_col = count,
+#'                      species_metadata = my_meta)
+#'
+#' # 4. Adjusting legend to top-right inside the plot
+#' plot_predator_ranged(legend_position = c(0.75, 0.95))
+#' }
+#' @export
+plot_predator_ranged <- function(data = gslea::EA.data,
+                                 year_col = year,
+                                 var_col = variable,
+                                 val_col = value,
+                                 year_range = NULL,
+                                 lang = "en",
+                                 show_legend = TRUE,
+                                 legend_position = c(0.05, 0.95),
+                                 y_label = NULL,
+                                 base_size = 14,
+                                 palette = NULL,
+                                 species_metadata = NULL) {
+
+  # 1. Tidy Evaluation Setup
+  yr_enquo  <- rlang::enquo(year_col)
+  var_enquo <- rlang::enquo(var_col)
+  val_enquo <- rlang::enquo(val_col)
+
+  # 2. Species Mapping & Dictionary
+  if (is.null(species_metadata)) {
+    pred_meta <- data.frame(
+      variable = c("harpseal.totalabundance.nwatl.2024",
+                   "greyseal.totalabundance.acw.2021",
+                   "gannet.n",
+                   "abft.n"),
+      en = c("Harp Seal", "Grey Seal", "Northern Gannet", "Atlantic Bluefin Tuna"),
+      fr = c("Phoque du Groenland", "Phoque gris", "Fou de Bassan", "Thon rouge de l'Atlantique"),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    pred_meta <- species_metadata
+  }
+
+  terms <- list(
+    en = c(xlab = "Year", ylab = "Ranged Abundance", min = "Min", max = "Max"),
+    fr = c(xlab = "Année", ylab = "Abondance indexée", min = "Min", max = "Max")
+  )
+
+  # 3. Data Preparation
+  df <- data |>
+    dplyr::rename(yr = !!yr_enquo, var = !!var_enquo, val = !!val_enquo) |>
+    # Ensure year is numeric to avoid discrete scale errors
+    dplyr::mutate(yr = as.numeric(as.character(yr))) |>
+    dplyr::filter(var %in% pred_meta$variable) |>
+    dplyr::filter(!is.na(val))
+
+  if (!is.null(year_range)) {
+    df <- df |> dplyr::filter(yr >= year_range[1], yr <= year_range[2])
+  }
+
+  # 4. Calculation of Ranged Values (0-1)
+  df_ranged <- df |>
+    dplyr::group_by(var) |>
+    dplyr::mutate(
+      min_val = min(val, na.rm = TRUE),
+      max_val = max(val, na.rm = TRUE),
+      ranged_val = (val - min_val) / (max_val - min_val)
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::left_join(pred_meta, by = c("var" = "variable")) |>
+    dplyr::mutate(
+      species_name = if(lang == "fr") fr else en,
+      # Construct legend label with original values: "Name (Min: X, Max: Y)"
+      legend_label = paste0(
+        species_name, " (",
+        terms[[lang]][["min"]], ": ", scales::comma(round(min_val, 1)), ", ",
+        terms[[lang]][["max"]], ": ", scales::comma(round(max_val, 1)), ")"
+      )
+    )
+
+  # 5. Aesthetics
+  target_order <- if(lang == "fr") pred_meta$fr else pred_meta$en
+  df_ranged$species_name <- factor(df_ranged$species_name, levels = target_order)
+
+  unique_labels <- df_ranged |>
+    dplyr::select(species_name, legend_label) |>
+    dplyr::distinct() |>
+    dplyr::arrange(species_name)
+
+  if (is.null(palette)) {
+    if(nrow(unique_labels) <= 4) {
+      palette <- c("#0072B2", "#D55E00", "#009E73", "#CC79A7")
+    } else {
+      palette <- scales::hue_pal()(nrow(unique_labels))
+    }
+  }
+  names(palette) <- unique_labels$legend_label
+
+  # 6. Build Plot
+  final_ylab <- if(!is.null(y_label)) y_label else terms[[lang]][["ylab"]]
+
+  # Determine justification based on position
+  leg_just <- if(is.numeric(legend_position)) c(0, 1) else "center"
+
+  p <- ggplot2::ggplot(df_ranged, ggplot2::aes(x = yr, y = ranged_val, color = legend_label)) +
+    ggplot2::geom_line(linewidth = 1.2) +
+    ggplot2::geom_point(size = 2.5) +
+    ggplot2::scale_y_continuous(limits = c(0, 1.05), breaks = seq(0, 1, 0.2)) +
+    ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 8)) +
+    ggplot2::scale_color_manual(values = palette) +
+    ggplot2::labs(x = terms[[lang]][["xlab"]], y = final_ylab, color = NULL) +
+    ggplot2::theme_bw(base_size = base_size) +
+    ggplot2::theme(
+      axis.title = ggplot2::element_text(face = "bold"),
+      legend.position = if(show_legend) legend_position else "none",
+      legend.justification = leg_just,
+      legend.background = ggplot2::element_rect(fill = ggplot2::alpha("white", 0.7), color = NA),
+      panel.grid.minor = ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(color = "black", fill = NA, linewidth = 1)
+    )
+
+  return(p)
+}
