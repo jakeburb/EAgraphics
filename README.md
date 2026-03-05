@@ -1,8 +1,3 @@
-README
-================
-Jacob Burbank
-2026-02-05
-
 ## Overview
 
 The EAgraphics package provides a suite of user-friendly functions
@@ -61,31 +56,31 @@ of all figures.
 You can install the package directly from github and explore the
 functions:
 
-``` r
-install.packages("devtools")
-devtools::install_github("jakeburb/EAgraphics")
-library(EAgraphics)
-```
+    install.packages("devtools")
+    devtools::install_github("jakeburb/EAgraphics")
+    library(EAgraphics)
 
 ## How To Use
 
 The following will walk through the use and functionality of each of the
 functions provided in the package which include:
 
-<u>plot_gslea_temperature(data, var, EARs, groups, …)</u>
+<u>plot\_gslea\_temperature(data, var, EARs, groups, …)</u>
 
 Visualizes temperature data (SST, bottom temperature, or depth-specific
 layers) from the gslea dataset or any ecosystem dataset. It supports
 bilingual labeling (lang = “en” or “fr”) and can aggregate multiple
 Ecoregions (EARs) into custom groups (e.g., “Northern GSL”). You can
 choose to show annual trends with simple lines or apply a smoother
-(fit_smooth = TRUE) to help identify long-term climatic tendencies;
+(fit\_smooth = TRUE) to help identify long-term climatic tendencies;
 while it defaults to a GAM, you can specify alternative smoothing
 methods and formulas to fit your specific statistical needs. For
 report-ready graphics, the text size is fully customizable via
-base_size, ensuring your plots stay legible.
+base\_size, ensuring your plots stay legible.
 
-<u>plot_gslea_ice(data, var, EARs, groups, …)</u>
+    plot_gslea_temperature(data, var, EARs, groups)
+
+<u>plot\_gslea\_ice(data, var, EARs, groups, …)</u>
 
 Visualizes ice metrics (e.g., duration, maximum coverage, first/last
 ice) and seasonal phenology (e.g., start of warming or cooling at
@@ -95,17 +90,20 @@ Like its temperature counterpart, it features full bilingual support
 function automatically detects the variable type to apply the correct
 units, whether it’s Days, Day of Year, or Week of Year. You can
 visualize trends with simple annual lines or utilize a customizable
-smoother to identify long-term patterns, while adjusting the base_size
+smoother to identify long-term patterns, while adjusting the base\_size
 to ensure all labels remain perfectly legible for publication.
 
-<u>plot_gslea_plankton(data, var, EARs, groups, …)</u>
+    plot_gslea_ice(data, var, EARs, groups, ...)
+
+<u>plot\_gslea\_plankton(data, var, EARs, groups, …)</u>
 
 Visualizes lower trophic level metrics including phytoplankton bloom
 dynamics (start and magnitude) and zooplankton abundance or biomass
 (e.g., Calanus species, total dry weight) from the gslea dataset or
 other ecosystem datasets. This function is specifically designed to
-handle complex biological units—such as $10^3\text{ ind m}^{-2}$ or
-$\text{mg chla m}^{-2}$—automatically based on the variable selected. It
+handle complex biological units—such as
+10<sup>3</sup> ind m<sup>−2</sup> or
+mg chla m<sup>−2</sup>—automatically based on the variable selected. It
 offers full bilingual support (lang = “en” or “fr”) and allows for the
 aggregation of Ecoregions into ecological groups. Users can display raw
 annual variability with connected lines or apply a customizable smoother
@@ -113,10 +111,12 @@ to highlight multi-decadal shifts in the GSL food web, all while
 maintaining control over font sizes and color palettes for
 publication-quality output.
 
-<u>calc_anomaly(data, baseline_range, year_range, quiet)</u>
+    plot_gslea_plankton(data, var, EARs, groups, ...)
+
+<u>calc\_anomaly(data, baseline\_range, year\_range, quiet)</u>
 
 A “pipe-friendly” utility used to transform raw observations into
-climatological anomalies. By providing a required baseline_range (e.g.,
+climatological anomalies. By providing a required baseline\_range (e.g.,
 c(1991, 2020)), the function calculates a long-term reference mean and
 computes the departure for every year in your dataset. It returns a
 focused, high-density data frame containing only the essentials: the
@@ -126,7 +126,7 @@ period actually contains data and, unless set to quiet = TRUE, will
 report the calculated mean to your console to ensure your “math is
 mathing” before you head to the plotting stage.
 
-<u>plot_anomaly(data, value_col, composite_data, …)</u>
+<u>plot\_anomaly(data, value\_col, composite\_data, …)</u>
 
 The flagship visualization tool for oceanographers to show environmental
 trends and standardized anomaly “scorecards.” This function generates a
@@ -136,12 +136,41 @@ color scale (from deep blue for negatives to dark red for positives). It
 features clamping logic to handle extreme outliers without breaking the
 color scale, supports stacked bars for composite indices, and includes
 bilingual support (lang = “en” or “fr”). The X-axis is highly
-customizable via x_breaks_interval, making it easy to create legible
+customizable via x\_breaks\_interval, making it easy to create legible
 plots for long time series.
+
+    # calculate the anomalies and plots them
+    calc_anomaly(data, baseline_range, year_range, quiet)
+    plot_anomaly(data, value_col, composite_data, ...)
 
 ## Best Practices of Use
 
+The purpose of the package is to define publication quality graphics and
+tables that can be used in reports and primary publications. This
+package has developed primarily to make graphics from gslea but we have
+tried to adopt function arguments that can accept any kind of long-form
+data.
+
+The package is designed to facilitate an ecosystem approach to marine
+management and therefore any kinds of novel approaches to visualising
+that are welcome. The package is not, however, designed to make whole
+new analyses and if one has a new analytical approach to working with
+the data, we would encourage the development of a new package that calls
+this and others as dependencies. In this way, a modularised robust
+approach is maintained over a suite of packages where a fatal error (or
+lack of updating) in one does not necessarily have to kill the
+functionality of the suite. We can include in this package graphical
+aspects for the ecosystem approach from your new analytical method.
+
 ## Development Plan
+
+This package can easily be expanded to include multiple kinds of
+graphics and tables. Pull requests are welcome as long as they do not
+break existing functionality.
+
+To include:
+
+- Visually appealing tables of data and pertinent summaries
 
 ## Citation for Package:
 
