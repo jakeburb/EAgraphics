@@ -113,6 +113,83 @@ to highlight multi-decadal shifts in the GSL food web, all while
 maintaining control over font sizes and color palettes for
 publication-quality output.
 
+<u>plot_predator_ranged(data, year_col, var_col, val_col, …)</u>
+
+A specialized visualization tool designed to compare population trends
+across species with vastly different absolute abundances (e.g.,
+comparing millions of seals to thousands of tuna). This function applies
+a Min-Max normalization—or ‘ranging’—to the data, rescaling all values
+to a common $0$ to $1$ scale. This allows users to identify synchronous
+shifts, lags, or divergent trajectories in predator groups that would
+otherwise be impossible to view on a single Y-axis.The function features
+a highly informative, ‘smart’ legend that automatically calculates and
+displays the original minimum and maximum values for each species,
+providing essential context to the normalized lines. It is built with a
+default focus on key regional predators (Harp Seals, Grey Seals,
+Northern Gannets, and Atlantic Bluefin Tuna) but is fully adaptable to
+external datasets through tidy evaluation. Like the other tools in the
+package, it supports bilingual labeling (lang = “en” or “fr”),
+customizable year ranges, and flexible legend positioning for
+publication-ready outputs.
+
+<u>plot_landings_stacked(data, year_col, group_col, value_col, …)</u>
+
+The primary tool for visualizing the evolution of fisheries composition
+and ecosystem components over time. While originally developed for
+landings, this function is equally robust for generating stacked biomass
+graphs, such as those used for pelagic fish in the GSL Ecosystem
+Summaries Report. By using high-impact stacked areas, it effectively
+communicates both the total volume of the resource and the shifting
+dominance of specific species or groups—making it easy to visualize
+transitions like the regime shift from groundfish to invertebrates. A
+standout feature of this function is its integrated translation and
+ordering logic: it automatically handles the mapping of common fisheries
+categories between English and French and ensures that legend items
+appear in a biologically or economically logical order rather than a
+simple alphabetical one. Users can easily customize color palettes, set
+specific Y-axis intervals (breaks) for better readability, and filter by
+year range.
+
+<u>plot_stock_status_heatmap(data, status_col, year_range, …)</u>
+
+A useful summary tool for ecosystem-level reporting, designed to
+visualize the health of multiple fish stocks simultaneously. This
+function generates a Stock Status Heatmap that categorizes stocks into
+three standard management zones: Healthy (Green), Cautious (Yellow), and
+Critical (Red). By aligning diverse species—from invertebrates to
+groundfish—along a shared timeline, it allows scientists and managers to
+identify broad ecosystem trends, such as periods of widespread decline
+or recovery across different functional groups.
+
+The function is built with rigorous categorization logic, automatically
+mapping various assessment terminologies into a unified color-coded
+system. It features bilingual support for species names and status
+levels, ensures chronological consistency across the X-axis, and
+provides a clean, “grid-style” layout that remains legible even when
+displaying a large number of stocks. It is an efficient visualization
+for Ecosystem Summaries Reports to provide a “snapshot” of the current
+state of fisheries relative to their precautionary approach (PA)
+reference points.”
+
+<u>plot_abundance_trends(data, var, year_range, …)</u>
+
+A flexible tool for visualizing temporal trends in absolute fish
+abundance, such as biomass or density. While other functions in the
+package focus on relative shifts or compositions, this function is
+designed to handle long-form datasets (like gslea) where users need to
+extract and plot specific variables or species from a large data frame.
+
+A key feature of this function is its dynamic labeling: when a single
+species is selected, the Y-axis label automatically updates to include
+the species name (e.g., ‘Atlantic Bluefin Tuna Abundance Index’). For
+broader comparisons, it can also plot multiple variables simultaneously
+using a high-contrast color palette. It includes an internal dictionary
+for common species names, supports the rosettafish package for automated
+French translations, and ensures that the Y-axis starts at zero by
+default to maintain a clear and honest representation of the data. It is
+highly customizable, allowing users to adjust line thickness, color
+palettes, and theme settings for publication-ready figures.
+
 <u>calc_anomaly(data, baseline_range, year_range, quiet)</u>
 
 A “pipe-friendly” utility used to transform raw observations into
@@ -138,6 +215,37 @@ color scale, supports stacked bars for composite indices, and includes
 bilingual support (lang = “en” or “fr”). The X-axis is highly
 customizable via x_breaks_interval, making it easy to create legible
 plots for long time series.
+
+<u>plot_anomaly_comp(data, value_col, var_col, …)</u>
+
+An advanced variation of the anomaly tool designed for multi-layered
+datasets, such as temperature or oxygen levels across multiple depth
+strata. This function goes beyond simple plotting by internally
+calculating a composite annual sum and a standardized scorecard value
+($Annual Sum / SD$).A key feature is the ability to define a baseline
+reference period (e.g., 2014-2020) for calculating the mean and standard
+deviation, allowing for consistent anomaly comparisons across different
+environmental variables regardless of the total time-series length.The
+resulting visualization features a stacked bar chart where individual
+components are clearly distinguished, overlaid with a composite trend
+line. The bottom scorecard provides a rigorous, standardized heatmap of
+the total annual departure. A key strength of this function is its
+‘smart’ legend logic: it can automatically append units (e.g., ‘m’ for
+depth) and numerically sort group levels to ensure logical ordering
+(e.g., 50m, 200m, 500m) regardless of the input order. Like its
+counterpart, it includes bilingual support and robust outlier clamping
+for publication-quality output.
+
+### Choosing the Right Anomaly Function
+
+| Feature | `plot_anomaly()` | `plot_anomaly_comp()` |
+|:---|:---|:---|
+| **Primary Use** | Pre-calculated anomalies | Raw component anomalies |
+| **Composite Logic** | User-supplied `composite_data` | **Calculated internally** (Sum) |
+| **Scorecard Value** | User-supplied | **Standardized Score** ($Z-score$) |
+| **Best For** | Single time-series trends | Depth strata, areas, or species groups |
+
+\##Examples
 
 ## Best Practices of Use
 

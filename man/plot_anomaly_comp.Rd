@@ -12,6 +12,7 @@ plot_anomaly_comp(
   show_composite = TRUE,
   show_scorecard = TRUE,
   year_range = NULL,
+  baseline_range = NULL,
   x_breaks_interval = 1,
   colors = NULL,
   lang = "en",
@@ -33,7 +34,10 @@ plot_anomaly_comp(
 
 \item{show_scorecard}{Logical. Should the heatmap scorecard be drawn?}
 
-\item{year_range}{Numeric vector \code{c(start, end)}.}
+\item{year_range}{Numeric vector \code{c(start, end)} for plot display limits.}
+
+\item{baseline_range}{Numeric vector \code{c(start, end)} for Z-score baseline.
+If \code{NULL}, defaults to the entire time series in the data.}
 
 \item{x_breaks_interval}{Numeric. Interval for year labels. Defaults to 1.}
 
@@ -53,22 +57,24 @@ A combined ggplot/cowplot object.
 \description{
 Creates a publication-quality anomaly plot with stacked bars and a scorecard.
 The function automatically calculates a composite annual sum and a
-standardized scorecard value (Annual Sum / SD of all Annual Sums).
-The grouping legend (e.g., depth) can be customized with units.
+standardized scorecard value. Standardized scores (Z-scores) can be calculated
+relative to a specific baseline year range (e.g., a climate normal) or the
+entire time series.
 }
 \examples{
 \dontrun{
 # Example 1: Dissolved Oxygen anomalies at different depths
-# The legend will show "200 m", "500 m", etc.
+# Baseline defaults to the entire range of 'do_data'
 plot_anomaly_comp(data = do_data,
                   value_col = anomaly,
                   var_col = depth,
                   unit = "m",
                   y_label = "Dissolved Oxygen Anomaly (ml/L)")
 
-# Example 2: Simple temperature anomaly with scorecard but no stacks
+# Example 2: SST anomaly with a specific 1991-2020 baseline for the scorecard
 plot_anomaly_comp(data = sst_data,
                   value_col = sst_anom,
+                  baseline_range = c(1991, 2020),
                   show_composite = TRUE,
                   colors = "red")
 }
