@@ -737,8 +737,9 @@ plot_anomaly <- function(data,
 #' @description
 #' Creates a publication-quality anomaly plot with stacked bars and a scorecard.
 #' The function automatically calculates a composite annual sum and a
-#' standardized scorecard value (Annual Sum / SD of all Annual Sums).
-#' The grouping legend (e.g., depth) can be customized with units.
+#' standardized scorecard value. Standardized scores (Z-scores) can be calculated
+#' relative to a specific baseline year range (e.g., a climate normal) or the
+#' entire time series.
 #'
 #' @param data Data frame containing \code{year} and the anomaly values.
 #' @param value_col Unquoted name of the anomaly column for the bars.
@@ -746,7 +747,9 @@ plot_anomaly <- function(data,
 #' @param unit Optional string for units (e.g., "m"). Appends to legend items only.
 #' @param show_composite Logical. Should the composite line be drawn?
 #' @param show_scorecard Logical. Should the heatmap scorecard be drawn?
-#' @param year_range Numeric vector \code{c(start, end)}.
+#' @param year_range Numeric vector \code{c(start, end)} for plot display limits.
+#' @param baseline_range Numeric vector \code{c(start, end)} for Z-score baseline.
+#'        If \code{NULL}, defaults to the entire time series in the data.
 #' @param x_breaks_interval Numeric. Interval for year labels. Defaults to 1.
 #' @param colors Optional character vector of colors. Defaults to "YlGnBu".
 #' @param lang Language: \code{"en"} (default) or \code{"fr"}.
@@ -759,16 +762,17 @@ plot_anomaly <- function(data,
 #' @examples
 #' \dontrun{
 #' # Example 1: Dissolved Oxygen anomalies at different depths
-#' # The legend will show "200 m", "500 m", etc.
+#' # Baseline defaults to the entire range of 'do_data'
 #' plot_anomaly_comp(data = do_data,
 #'                   value_col = anomaly,
 #'                   var_col = depth,
 #'                   unit = "m",
 #'                   y_label = "Dissolved Oxygen Anomaly (ml/L)")
 #'
-#' # Example 2: Simple temperature anomaly with scorecard but no stacks
+#' # Example 2: SST anomaly with a specific 1991-2020 baseline for the scorecard
 #' plot_anomaly_comp(data = sst_data,
 #'                   value_col = sst_anom,
+#'                   baseline_range = c(1991, 2020),
 #'                   show_composite = TRUE,
 #'                   colors = "red")
 #' }
@@ -780,6 +784,7 @@ plot_anomaly_comp <- function(data,
                               show_composite = TRUE,
                               show_scorecard = TRUE,
                               year_range = NULL,
+                              baseline_range = NULL,
                               x_breaks_interval = 1,
                               colors = NULL,
                               lang = "en",
@@ -796,12 +801,28 @@ plot_anomaly_comp <- function(data,
     fr = c(anom = "Anomalies", yr = "Année")
   )
 
-  # Internal Calculation: Composite Sum and Standardized Score
+  # Internal Calculation: Composite Sum
   composite_data <- data |>
     dplyr::group_by(year) |>
-    dplyr::summarise(annual_sum = sum(!!val_enquo, na.rm = TRUE), .groups = "drop") |>
-    dplyr::mutate(std_score = annual_sum / stats::sd(annual_sum, na.rm = TRUE))
+    dplyr::summarise(annual_sum = sum(!!val_enquo, na.rm = TRUE), .groups = "drop")
 
+  # Calculate Baseline Statistics for Standardized Score
+  if (!is.null(baseline_range)) {
+    baseline_df <- composite_data |>
+      dplyr::filter(year >= baseline_range[1], year <= baseline_range[2])
+
+    b_mean <- mean(baseline_df$annual_sum, na.rm = TRUE)
+    b_sd   <- stats::sd(baseline_df$annual_sum, na.rm = TRUE)
+  } else {
+    b_mean <- mean(composite_data$annual_sum, na.rm = TRUE)
+    b_sd   <- stats::sd(composite_data$annual_sum, na.rm = TRUE)
+  }
+
+  # Apply Standardization (Z-score)
+  composite_data <- composite_data |>
+    dplyr::mutate(std_score = (annual_sum - b_mean) / b_sd)
+
+  # Filter Display Range
   all_years <- sort(unique(data$year))
   x_lims <- if (!is.null(year_range)) year_range else range(all_years, na.rm = TRUE)
 
@@ -883,8 +904,8 @@ plot_anomaly_comp <- function(data,
     score_palette <- c(grDevices::colorRampPalette(c("black","blue", "white"))(10),
                        grDevices::colorRampPalette(c("white", "red", "#5D0000"))(7))
 
-    Breaks <- c(-5, -4.5, -4, -3.5, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3)
-    Labels <- c("-5", "-4.5", "-4", "-3.5", "-3", "-2.5", "-2", "-1.5", "-1", "-0.5", "0", "0.5", "1", "1.5", "2", "2.5")
+    Breaks <- seq(-5, 3, by = 0.5)
+    Labels <- as.character(Breaks[-length(Breaks)])
 
     score_df <- composite_data |>
       dplyr::mutate(
