@@ -17,6 +17,7 @@ plot_landings_stacked(
   base_size = 14,
   xlab = NULL,
   ylab = NULL,
+  legend_title = NULL,
   y_breaks = ggplot2::waiver(),
   custom_theme = ggplot2::theme_bw()
 )
@@ -45,6 +46,8 @@ If \code{NULL}, the function auto-detects based on species names in the data.}
 
 \item{xlab, ylab}{Optional strings to override default axis labels.}
 
+\item{legend_title}{Optional string to override the automatic legend title detection.}
+
 \item{y_breaks}{Optional numeric vector for y-axis tick marks.
 Defaults to \code{ggplot2::waiver()} (automatic).}
 
@@ -57,8 +60,8 @@ A \code{ggplot} object.
 Visualizes fisheries landings or biomass trends over time using a stacked area plot.
 Supports bilingual labeling (via an internal dictionary and \code{rosettafish}),
 custom color palettes, and adjustable text scaling.
-By default, groups are stacked as: Pelagics (Top), Crustaceans (Middle), Groundfish (Bottom)
-for landings, or Herring (Top), Mackerel (Middle), Shrimp (Bottom) for biomass.
+Automatically detects the legend title (Group vs Guild) and stacking order
+based on the content of the data.
 }
 \examples{
 \dontrun{

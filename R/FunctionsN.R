@@ -1109,8 +1109,8 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' Visualizes fisheries landings or biomass trends over time using a stacked area plot.
 #' Supports bilingual labeling (via an internal dictionary and \code{rosettafish}),
 #' custom color palettes, and adjustable text scaling.
-#' By default, groups are stacked as: Pelagics (Top), Crustaceans (Middle), Groundfish (Bottom)
-#' for landings, or Herring (Top), Mackerel (Middle), Shrimp (Bottom) for biomass.
+#' Automatically detects the legend title (Group vs Guild) and stacking order
+#' based on the content of the data.
 #'
 #' @param data A data frame containing landings or biomass.
 #' @param year_col Unquoted name of the year column. Defaults to \code{year}.
@@ -1124,6 +1124,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' @param col_palette Optional named character vector of colors.
 #' @param base_size Numeric. Base font size for the plot. Defaults to 14.
 #' @param xlab,ylab Optional strings to override default axis labels.
+#' @param legend_title Optional string to override the automatic legend title detection.
 #' @param y_breaks Optional numeric vector for y-axis tick marks.
 #'        Defaults to \code{ggplot2::waiver()} (automatic).
 #' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
@@ -1168,6 +1169,7 @@ plot_landings_stacked <- function(data,
                                   base_size = 14,
                                   xlab = NULL,
                                   ylab = NULL,
+                                  legend_title = NULL,
                                   y_breaks = ggplot2::waiver(),
                                   custom_theme = ggplot2::theme_bw()) {
 
@@ -1178,16 +1180,34 @@ plot_landings_stacked <- function(data,
 
   # 2. Local Dictionary
   terms <- list(
-    en = c(title = "Fisheries Landings by Group", xlab = "Year", ylab = "Landings (t)", leg = "Group",
+    en = c(title = "Fisheries Landings by Group", xlab = "Year", ylab = "Landings (t)",
+           leg_group = "Group", leg_guild = "Guild",
            crustaceans = "Crustaceans", groundfish = "Groundfish", pelagics = "Pelagics",
            "Atlantic herring" = "Atlantic herring",
            "Atlantic mackerel" = "Atlantic mackerel",
-           "Northern shrimp" = "Northern shrimp"),
-    fr = c(title = "Débarquements de pêche par groupe", xlab = "Année", ylab = "Débarquements (t)", leg = "Groupe",
+           "Northern shrimp" = "Northern shrimp",
+           "piscivorous fishes and invertebrates" = "Piscivorous fishes and invertebrates",
+           "limivorous and detritivorous fishes and invertebrates" = "Limivorous and detritivorous fishes and invertebrates",
+           "benthivorous fishes" = "Benthivorous fishes",
+           "planctonivorous fishes" = "Planctonivorous fishes",
+           "mesopelagic micronecton" = "Mesopelagic micronecton",
+           "demersal micronecton" = "Demersal micronecton",
+           "filter-feeding invertebrates" = "Filter-feeding invertebrates",
+           "benthivorous invertebrates" = "Benthivorous invertebrates"),
+    fr = c(title = "Débarquements de pêche par groupe", xlab = "Année", ylab = "Débarquements (t)",
+           leg_group = "Groupe", leg_guild = "Guilde",
            crustaceans = "Crustacés", groundfish = "Poissons de fond", pelagics = "Pélagiques",
            "Atlantic herring" = "Hareng de l'Atlantique",
            "Atlantic mackerel" = "Maquereau de l'Atlantique",
-           "Northern shrimp" = "Crevette nordique")
+           "Northern shrimp" = "Crevette nordique",
+           "piscivorous fishes and invertebrates" = "Poissons piscivores et invertébrés",
+           "limivorous and detritivorous fishes and invertebrates" = "Poissons limivores et détritivores et invertébrés",
+           "benthivorous fishes" = "Poissons benthivores",
+           "planctonivorous fishes" = "Poissons planctonivores",
+           "mesopelagic micronecton" = "Micronecton mésopélagique",
+           "demersal micronecton" = "Micronecton démersal",
+           "filter-feeding invertebrates" = "Invertébrés filtreurs",
+           "benthivorous invertebrates" = "Invertébrés benthivores")
   )
 
   get_term <- function(x, dictionary, language) {
@@ -1198,15 +1218,28 @@ plot_landings_stacked <- function(data,
     return(x)
   }
 
-  # 3. Smart Default Ordering
-  if (is.null(group_order)) {
-    unique_in_data <- unique(as.character(data[[rlang::as_label(grp_enquo)]]))
+  # 3. Smart Default Detection (Order and Legend Title)
+  unique_in_data <- unique(as.character(data[[rlang::as_label(grp_enquo)]]))
 
-    if (any(unique_in_data %in% c("Atlantic herring", "Atlantic mackerel", "Northern shrimp"))) {
+  # Guild detection logic
+  guild_keys <- names(terms$en)[12:19]
+  is_guild_data <- any(unique_in_data %in% guild_keys)
+
+  if (is.null(group_order)) {
+    if (is_guild_data) {
+      group_order <- guild_keys
+    } else if (any(unique_in_data %in% c("Atlantic herring", "Atlantic mackerel", "Northern shrimp"))) {
       group_order <- c("Atlantic herring", "Atlantic mackerel", "Northern shrimp")
     } else {
       group_order <- c("pelagics", "crustaceans", "groundfish")
     }
+  }
+
+  if (is.null(legend_title)) {
+    legend_key <- if (is_guild_data) "leg_guild" else "leg_group"
+    final_leg_title <- terms[[lang]][[legend_key]]
+  } else {
+    final_leg_title <- legend_title
   }
 
   # 4. Data Prep
@@ -1255,7 +1288,7 @@ plot_landings_stacked <- function(data,
     ggplot2::scale_y_continuous(labels = scales::comma,
                                 expand = ggplot2::expansion(mult = c(0, 0.15)),
                                 breaks = y_breaks) +
-    ggplot2::labs(x = final_xlab, y = final_ylab, fill = get_term("leg", terms[[lang]], lang)) +
+    ggplot2::labs(x = final_xlab, y = final_ylab, fill = final_leg_title) +
     custom_theme +
     ggplot2::theme(text = ggplot2::element_text(size = base_size),
                    axis.title = ggplot2::element_text(face = "bold"),
