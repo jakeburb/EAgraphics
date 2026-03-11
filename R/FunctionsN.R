@@ -1142,7 +1142,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' # 2. French version, custom year range, and larger text scaling
 #' plot_landings_stacked(landings_data,
 #'                        lang = "fr",
-#'                        year_range = c(1990, 2023),
+#'                        year_range = c(1990, 2024),
 #'                        base_size = 16)
 #'
 #' # 3. Custom stack order: Pelagics on top, Crustaceans on bottom
