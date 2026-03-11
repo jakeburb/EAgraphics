@@ -1219,7 +1219,10 @@ plot_landings_stacked <- function(data,
     base_pal <- c(
       "Crustaceans" = "#D55E00", "Crustacés" = "#D55E00",
       "Groundfish"  = "#0072B2", "Poissons de fond" = "#0072B2",
-      "Pelagics"    = "#009E73", "Pélagiques" = "#009E73"
+      "Pelagics"    = "#009E73", "Pélagiques" = "#009E73",
+      "Atlantic herring" = "#66c2a5", "Hareng de l'Atlantique" = "#66c2a5",
+      "Atlantic mackerel" = "#8da0cb", "Maquereau de l'Atlantique" = "#8da0cb",
+      "Northern shrimp" = "#e78ac3", "Crevette nordique" = "#e78ac3"
     )
     if (all(levels(df$grp) %in% names(base_pal))) {
       col_palette <- base_pal
