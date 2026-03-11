@@ -1178,11 +1178,16 @@ plot_landings_stacked <- function(data,
   # 2. Local Dictionary
   terms <- list(
     en = c(title = "Fisheries Landings by Group", xlab = "Year", ylab = "Landings (t)", leg = "Group",
-           crustaceans = "Crustaceans", groundfish = "Groundfish", pelagics = "Pelagics"),
+           crustaceans = "Crustaceans", groundfish = "Groundfish", pelagics = "Pelagics",
+           "Atlantic herring" = "Atlantic herring",
+           "Atlantic mackerel" = "Atlantic mackerel",
+           "Northern shrimp" = "Northern shrimp"),
     fr = c(title = "Débarquements de pêche par groupe", xlab = "Année", ylab = "Débarquements (t)", leg = "Groupe",
-           crustaceans = "Crustacés", groundfish = "Poissons de fond", pelagics = "Pélagiques")
+           crustaceans = "Crustacés", groundfish = "Poissons de fond", pelagics = "Pélagiques",
+           "Atlantic herring" = "Hareng de l'Atlantique",
+           "Atlantic mackerel" = "Maquereau de l'Atlantique",
+           "Northern shrimp" = "Crevette nordique")
   )
-
   get_term <- function(x, dictionary, language) {
     if (x %in% names(dictionary)) return(dictionary[[x]])
     if (language == "fr" && requireNamespace("rosettafish", quietly = TRUE)) {
