@@ -2,7 +2,7 @@
 % Please edit documentation in R/FunctionsN.R
 \name{plot_landings_stacked}
 \alias{plot_landings_stacked}
-\title{Plot Stacked Landings by Group}
+\title{Plot Stacked Landings or Biomass by Group}
 \usage{
 plot_landings_stacked(
   data,
@@ -11,7 +11,7 @@ plot_landings_stacked(
   value_col = landings,
   lang = "en",
   year_range = NULL,
-  group_order = c("pelagics", "crustaceans", "groundfish"),
+  group_order = NULL,
   show_title = FALSE,
   col_palette = NULL,
   base_size = 14,
@@ -22,20 +22,20 @@ plot_landings_stacked(
 )
 }
 \arguments{
-\item{data}{A data frame containing landings.}
+\item{data}{A data frame containing landings or biomass.}
 
 \item{year_col}{Unquoted name of the year column. Defaults to \code{year}.}
 
 \item{group_col}{Unquoted name of the grouping column (e.g., species group). Defaults to \code{grp}.}
 
-\item{value_col}{Unquoted name of the landings value column. Defaults to \code{landings}.}
+\item{value_col}{Unquoted name of the landings or biomass value column. Defaults to \code{landings}.}
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
 \item{year_range}{Numeric vector \code{c(start, end)} to filter the timeline.}
 
 \item{group_order}{Character vector defining the visual order from \strong{top to bottom}.
-Defaults to \code{c("pelagics", "crustaceans", "groundfish")}.}
+If \code{NULL}, the function auto-detects based on species names in the data.}
 
 \item{show_title}{Logical. Defaults to \code{FALSE}.}
 
@@ -54,33 +54,34 @@ Defaults to \code{ggplot2::waiver()} (automatic).}
 A \code{ggplot} object.
 }
 \description{
-Visualizes fisheries landings over time using a stacked area plot.
+Visualizes fisheries landings or biomass trends over time using a stacked area plot.
 Supports bilingual labeling (via an internal dictionary and \code{rosettafish}),
 custom color palettes, and adjustable text scaling.
-By default, groups are stacked as: Crustaceans (Top), Groundfish (Middle), Pelagics (Bottom).
+By default, groups are stacked as: Pelagics (Top), Crustaceans (Middle), Groundfish (Bottom)
+for landings, or Herring (Top), Mackerel (Middle), Shrimp (Bottom) for biomass.
 }
 \examples{
 \dontrun{
 # Load your data
 landings_data <- read.csv("landings_by_group.csv")
 
-# 1. Basic plot with default order (Top: Pelagics -> Middle: Crustaceans  -> Bottom: Groundfish)
+# 1. Basic plot with default order (Top: Pelagics -> Middle: Crustaceans -> Bottom: Groundfish)
 plot_landings_stacked(landings_data)
 
 # 2. French version, custom year range, and larger text scaling
 plot_landings_stacked(landings_data,
-                      lang = "fr",
-                      year_range = c(1990, 2023),
-                      base_size = 16)
+                       lang = "fr",
+                       year_range = c(1990, 2023),
+                       base_size = 16)
 
 # 3. Custom stack order: Pelagics on top, Crustaceans on bottom
 plot_landings_stacked(landings_data,
-                      group_order = c("pelagics", "groundfish", "crustaceans"))
+                       group_order = c("pelagics", "groundfish", "crustaceans"))
 
 # 4. Custom colour palette with rosettafish fallback
 my_pal <- c("Crustaceans" = "#8b0000",
-            "Groundfish"  = "#4682b4",
-            "Pelagics"    = "#2e8b57")
+             "Groundfish"  = "#4682b4",
+             "Pelagics"    = "#2e8b57")
 
 plot_landings_stacked(landings_data, col_palette = my_pal)
 }
