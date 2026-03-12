@@ -1871,31 +1871,23 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'
 #' @description
 #' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-#' Uses a binned color scale strictly following specified limits.
-#' Aligns x-axes perfectly across a shared timeline, ensuring the earliest year (1984)
-#' and the most recent years are fully rendered.
+#' Uses a binned color scale with explicit '<-3' and '>3' labels.
+#' Aligns x-axes perfectly across a shared timeline, ensuring 1984 and
+#' edge years are fully rendered.
 #'
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
-#'        Defaults to the full range found in the data (e.g., 1984-2025).
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
-#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values before calculation.
+#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values.
 #' @param base_size Numeric. Base font size. Defaults to 14.
 #'
 #' @return A \code{patchwork} object with two stacked panels (A and B).
 #'
 #' @examples
 #' \dontrun{
-#' # 1. Basic plot starting from 1984 with default binned scale
 #' plot_size_spectrum_anomalies(size.spectrum.data.gsl)
-#'
-#' # 2. French version with a specific year range and 10-year breaks
-#' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-#'                              lang = "fr",
-#'                              year_range = c(1984, 2024),
-#'                              x_breaks = seq(1984, 2024, 10))
 #' }
 #' @export
 plot_size_spectrum_anomalies <- function(data,
@@ -1949,24 +1941,27 @@ plot_size_spectrum_anomalies <- function(data,
   # 4. Panel Builder Helper
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
-      # Added na.rm = TRUE to prevent warning messages on edge tiles
       ggplot2::geom_tile(color = "black", linewidth = 0.2, na.rm = TRUE) +
-      # Binned Scale
+      # Binned Scale with custom end labels
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
         high = "#FF0000",
         midpoint = 0,
         breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
-        limits = c(-3.1, 3.1),
+        labels = c("<-3", "-2", "-1", "-0.5", "0.5", "1", "2", ">3"),
+        limits = c(-3, 3), # Locked to 3 to align labels with end blocks
         oob = scales::squish,
         na.value = "transparent",
         guide = ggplot2::guide_colorsteps(
-          barwidth = 20, barheight = 1, show.limits = TRUE,
-          title.position = "top", title.hjust = 0.5
+          barwidth = 20,
+          barheight = 1,
+          show.limits = TRUE,
+          title.position = "top",
+          title.hjust = 0.5
         )
       ) +
-      # Using expand = expansion() to ensure edge tiles (1984) are not dropped
+      # Buffer ensures 1984 isn't dropped
       ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0, add = 0.6),
                                   limits = c(global_min - 0.5, global_max + 0.5),
                                   breaks = x_breaks %||% seq(global_min, global_max, 5)) +

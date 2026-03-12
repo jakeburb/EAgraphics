@@ -19,14 +19,13 @@ plot_size_spectrum_anomalies(
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.
-Defaults to the full range found in the data (e.g., 1984-2025).}
+\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.}
 
 \item{x_breaks}{Optional numeric vector for x-axis tick marks.}
 
 \item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores.}
 
-\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values before calculation.}
+\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values.}
 
 \item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
@@ -35,19 +34,12 @@ A \code{patchwork} object with two stacked panels (A and B).
 }
 \description{
 Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-Uses a binned color scale strictly following specified limits.
-Aligns x-axes perfectly across a shared timeline, ensuring the earliest year (1984)
-and the most recent years are fully rendered.
+Uses a binned color scale with explicit '<-3' and '>3' labels.
+Aligns x-axes perfectly across a shared timeline, ensuring 1984 and
+edge years are fully rendered.
 }
 \examples{
 \dontrun{
-# 1. Basic plot starting from 1984 with default binned scale
 plot_size_spectrum_anomalies(size.spectrum.data.gsl)
-
-# 2. French version with a specific year range and 10-year breaks
-plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-                             lang = "fr",
-                             year_range = c(1984, 2024),
-                             x_breaks = seq(1984, 2024, 10))
 }
 }
