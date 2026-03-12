@@ -1994,3 +1994,94 @@ plot_size_spectrum_anomalies <- function(data,
     patchwork::plot_annotation(tag_levels = 'A') &
     ggplot2::theme(legend.position = "bottom")
 }
+
+
+#' Plot Trophic Guild Condition Anomalies
+#'
+#' @description
+#' Calculates and visualizes condition Z-score anomalies for specific habitat guilds
+#' and a combined "All" group. Stacks EAR 100 and 200 with aligned x-axes and
+#' the binned color scale from image.
+#'
+#' @param data A data frame containing 'year', 'EAR', 'HabitatGuild', and 'value'.
+#' @param lang Language for labels: \code{"en"} or \code{"fr"}.
+#' @param year_range Optional numeric vector \code{c(start, end)}.
+#' @param x_breaks Optional numeric vector for x-axis ticks.
+#' @param base_size Numeric. Base font size. Defaults to 14.
+#'
+#' @return A \code{patchwork} object with two stacked panels.
+#' @export
+plot_condition_guild_anomalies <- function(data,
+                                           lang = "en",
+                                           year_range = NULL,
+                                           x_breaks = NULL,
+                                           base_size = 14) {
+
+  terms <- list(
+    en = c(xlab = "Year", ylab = "Habitat Guild", leg = "Z-Score"),
+    fr = c(xlab = "Année", ylab = "Guilde d'habitat", leg = "Score-Z")
+  )
+
+  # 1. Prepare Data: Add the "All" group
+  guilds_of_interest <- c("Pelagic", "Demersal", "Benthopelagic", "Benthic")
+
+  df_guilds <- data |>
+    dplyr::filter(HabitatGuild %in% guilds_of_interest)
+
+  df_all <- data |>
+    dplyr::filter(HabitatGuild %in% guilds_of_interest) |>
+    dplyr::mutate(HabitatGuild = "All")
+
+  # 2. Calculate Z-Scores (No log transform as requested)
+  df_final <- dplyr::bind_rows(df_guilds, df_all) |>
+    dplyr::group_by(EAR, HabitatGuild, year) |>
+    dplyr::summarise(value = mean(value, na.rm = TRUE), .groups = "drop") |>
+    dplyr::group_by(EAR, HabitatGuild) |>
+    dplyr::mutate(
+      mean_val = mean(value, na.rm = TRUE),
+      sd_val   = sd(value, na.rm = TRUE),
+      anomaly  = (value - mean_val) / sd_val,
+      # Order Y-axis: "All" at the top, then the rest
+      HabitatGuild = factor(HabitatGuild, levels = c(rev(guilds_of_interest), "All"))
+    ) |>
+    dplyr::ungroup()
+
+  # 3. Timeline Alignment
+  global_min <- if(!is.null(year_range)) year_range[1] else min(df_final$year, na.rm = TRUE)
+  global_max <- if(!is.null(year_range)) year_range[2] else max(df_final$year, na.rm = TRUE)
+
+  # 4. Plotting Helper (Consistent with your Size Spectrum look)
+  make_panel <- function(sub_data, show_x = TRUE) {
+    ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = HabitatGuild, fill = anomaly)) +
+      ggplot2::geom_tile(color = "black", linewidth = 0.2, na.rm = TRUE) +
+      ggplot2::scale_fill_steps2(
+        low = "#0000FF", mid = "white", high = "#FF0000",
+        midpoint = 0,
+        breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
+        labels = c("<-3", "-2", "-1", "-0.5", "0.5", "1", "2", ">3"),
+        limits = c(-3, 3),
+        oob = scales::squish,
+        guide = ggplot2::guide_colorsteps(barwidth = 20, barheight = 1, show.limits = FALSE)
+      ) +
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(add = 0.6),
+                                  limits = c(global_min - 0.5, global_max + 0.5),
+                                  breaks = x_breaks %||% seq(global_min, global_max, 5)) +
+      ggplot2::labs(x = if(show_x) terms[[lang]][["xlab"]] else NULL,
+                    y = terms[[lang]][["ylab"]],
+                    fill = terms[[lang]][["leg"]]) +
+      ggplot2::theme_bw(base_size = base_size) +
+      ggplot2::theme(
+        panel.grid = ggplot2::element_blank(),
+        axis.text.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_text(angle = 90, vjust = 0.5)
+      )
+  }
+
+  # 5. Assemble
+  p1 <- make_panel(dplyr::filter(df_final, EAR == 100), show_x = FALSE)
+  p2 <- make_panel(dplyr::filter(df_final, EAR == 200), show_x = TRUE)
+
+  (p1 / p2) +
+    patchwork::plot_layout(guides = "collect") +
+    patchwork::plot_annotation(tag_levels = 'A') &
+    ggplot2::theme(legend.position = "bottom")
+}
