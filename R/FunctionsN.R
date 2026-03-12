@@ -1590,9 +1590,9 @@ plot_predator_ranged <- function(data = gslea::EA.data,
 #' @return A ggplot object
 #' @export
 #' @examples
-#' plot.size.spectrum.f(years=1970:2025, EAR=100)
-#' plot.size.spectrum.f(years=1970:2025, EAR=200)
-plot.size.spectrum.f = function(years, EAR, ...) {
+#' plot_size_spectrum_f(years=1970:2025, EAR=100)
+#' plot_size_spectrum_f(years=1970:2025, EAR=200)
+plot_size_spectrum_f = function(years, EAR, ...) {
 
   EA.data=size.spectrum.data.gsl # remove this line for the package, this is just a temporary hack to get temporary data
 
@@ -1680,11 +1680,11 @@ plot.size.spectrum.f = function(years, EAR, ...) {
 #' @return A list containing: plot (ggplot object), slopes (data.frame with slope estimates)
 #' @export
 #' @examples
-#' result <- plot.size.spectrum.slopes.f(years=1970:2025, EAR=200)
-#' result <- plot.size.spectrum.slopes.f(years=1970:2025, EAR=100)
+#' result <- plot_size_spectrum_slopes_f(years=1970:2025, EAR=200)
+#' result <- plot_size_spectrum_slopes_f(years=1970:2025, EAR=100)
 #' print(result$plot)
 #' head(result$slopes)
-plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ...) {
+plot_size_spectrum_slopes_f = function(years, EAR, min_points = 5, gam_k = 5, ...) {
 
   EA.data=size.spectrum.data.gsl # remove this line for the package, this is just a temporary hack to get temporary data
 
