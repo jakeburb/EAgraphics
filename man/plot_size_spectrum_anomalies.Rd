@@ -19,7 +19,8 @@ plot_size_spectrum_anomalies(
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.}
+\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.
+Defaults to the full range found in the data (e.g., 1984-2025).}
 
 \item{x_breaks}{Optional numeric vector for x-axis tick marks.}
 
@@ -30,7 +31,7 @@ plot_size_spectrum_anomalies(
 \item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
 \value{
-A \code{patchwork} object with two stacked panels (A and B).
+A \code{patchwork} object with two stacked panels (A) and (B).
 }
 \description{
 Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
