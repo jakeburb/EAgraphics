@@ -1059,8 +1059,8 @@ plot_stock_status_heatmap <- function(data = NULL,
   )
 
   terms <- list(
-    en = c(title = "Stock Status Relative to Limit Reference Point (LRP)",
-           xlab = "Year", ylab = "Stock", leg = "Status/LRP"),
+    en = c(title = "Stock State Relative to Limit Reference Point (LRP)",
+           xlab = "Year", ylab = "Stock", leg = "State/LRP"),
     fr = c(title = "État des stocks par rapport au point de référence limite (PRL)",
            xlab = "Année", ylab = "Stock", leg = "État/PRL")
   )
