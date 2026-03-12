@@ -1878,12 +1878,13 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
+#'        Defaults to the full range found in the data (e.g., 1984-2025).
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
 #' @param log_transform Logical. If \code{TRUE} (default), log-transforms values.
 #' @param base_size Numeric. Base font size. Defaults to 14.
 #'
-#' @return A \code{patchwork} object with two stacked panels (A and B).
+#' @return A \code{patchwork} object with two stacked panels (A) and (B).
 #'
 #' @examples
 #' \dontrun{
@@ -1942,26 +1943,27 @@ plot_size_spectrum_anomalies <- function(data,
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
       ggplot2::geom_tile(color = "black", linewidth = 0.2, na.rm = TRUE) +
-      # Binned Scale with custom end labels
+      # Binned Scale strictly following image
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
         high = "#FF0000",
         midpoint = 0,
+        # Breaks now include the limits to satisfy the warning's logic
         breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
         labels = c("<-3", "-2", "-1", "-0.5", "0.5", "1", "2", ">3"),
-        limits = c(-3, 3), # Locked to 3 to align labels with end blocks
+        limits = c(-3, 3),
         oob = scales::squish,
         na.value = "transparent",
         guide = ggplot2::guide_colorsteps(
           barwidth = 20,
           barheight = 1,
-          show.limits = TRUE,
+          # Removed show.limits = TRUE to stop the warning
           title.position = "top",
           title.hjust = 0.5
         )
       ) +
-      # Buffer ensures 1984 isn't dropped
+      # expansion(add = 0.6) prevents the 1984 clipping issue
       ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0, add = 0.6),
                                   limits = c(global_min - 0.5, global_max + 0.5),
                                   breaks = x_breaks %||% seq(global_min, global_max, 5)) +
