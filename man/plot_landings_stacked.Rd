@@ -18,6 +18,7 @@ plot_landings_stacked(
   xlab = NULL,
   ylab = NULL,
   legend_title = NULL,
+  x_breaks = NULL,
   y_breaks = ggplot2::waiver(),
   custom_theme = ggplot2::theme_bw()
 )
@@ -48,6 +49,8 @@ If \code{NULL}, the function auto-detects based on species names in the data.}
 
 \item{legend_title}{Optional string to override the automatic legend title detection.}
 
+\item{x_breaks}{Optional numeric vector for x-axis tick marks (e.g. \code{seq(1990, 2025, 5)}).}
+
 \item{y_breaks}{Optional numeric vector for y-axis tick marks.
 Defaults to \code{ggplot2::waiver()} (automatic).}
 
@@ -74,7 +77,7 @@ plot_landings_stacked(landings_data)
 # 2. French version, custom year range, and larger text scaling
 plot_landings_stacked(landings_data,
                        lang = "fr",
-                       year_range = c(1990, 2024),
+                       year_range = c(1990, 2023),
                        base_size = 16)
 
 # 3. Custom stack order: Pelagics on top, Crustaceans on bottom

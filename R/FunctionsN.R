@@ -1125,6 +1125,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' @param base_size Numeric. Base font size for the plot. Defaults to 14.
 #' @param xlab,ylab Optional strings to override default axis labels.
 #' @param legend_title Optional string to override the automatic legend title detection.
+#' @param x_breaks Optional numeric vector for x-axis tick marks (e.g. \code{seq(1990, 2025, 5)}).
 #' @param y_breaks Optional numeric vector for y-axis tick marks.
 #'        Defaults to \code{ggplot2::waiver()} (automatic).
 #' @param custom_theme A ggplot2 theme. Defaults to \code{theme_bw()}.
@@ -1142,7 +1143,7 @@ plot_stock_status_heatmap <- function(data = NULL,
 #' # 2. French version, custom year range, and larger text scaling
 #' plot_landings_stacked(landings_data,
 #'                        lang = "fr",
-#'                        year_range = c(1990, 2024),
+#'                        year_range = c(1990, 2023),
 #'                        base_size = 16)
 #'
 #' # 3. Custom stack order: Pelagics on top, Crustaceans on bottom
@@ -1170,6 +1171,7 @@ plot_landings_stacked <- function(data,
                                   xlab = NULL,
                                   ylab = NULL,
                                   legend_title = NULL,
+                                  x_breaks = NULL,
                                   y_breaks = ggplot2::waiver(),
                                   custom_theme = ggplot2::theme_bw()) {
 
@@ -1218,21 +1220,21 @@ plot_landings_stacked <- function(data,
     return(x)
   }
 
-  # 3. Smart Default Detection (Order and Legend Title)
+  # 3. Smart Default Detection
   unique_in_data <- unique(as.character(data[[rlang::as_label(grp_enquo)]]))
-
-  # Guild detection logic
   guild_keys <- names(terms$en)[12:19]
   is_guild_data <- any(unique_in_data %in% guild_keys)
 
+  if (is_guild_data) {
+    auto_order <- guild_keys
+  } else if (any(unique_in_data %in% c("Atlantic herring", "Atlantic mackerel", "Northern shrimp"))) {
+    auto_order <- c("Atlantic herring", "Atlantic mackerel", "Northern shrimp")
+  } else {
+    auto_order <- c("pelagics", "crustaceans", "groundfish")
+  }
+
   if (is.null(group_order)) {
-    if (is_guild_data) {
-      group_order <- guild_keys
-    } else if (any(unique_in_data %in% c("Atlantic herring", "Atlantic mackerel", "Northern shrimp"))) {
-      group_order <- c("Atlantic herring", "Atlantic mackerel", "Northern shrimp")
-    } else {
-      group_order <- c("pelagics", "crustaceans", "groundfish")
-    }
+    group_order <- auto_order
   }
 
   if (is.null(legend_title)) {
@@ -1253,7 +1255,6 @@ plot_landings_stacked <- function(data,
 
   # 5. Factor Ordering & Translation
   df$grp <- factor(as.character(df$grp), levels = group_order)
-
   current_levs <- levels(df$grp)
   translated_levs <- sapply(current_levs, get_term, dictionary = terms[[lang]], language = lang)
   levels(df$grp) <- unname(translated_levs)
@@ -1276,15 +1277,20 @@ plot_landings_stacked <- function(data,
     }
   }
 
-  # 7. Build Plot
+  # 7. Axis Logic
   final_xlab <- if(!is.null(xlab)) xlab else get_term("xlab", terms[[lang]], lang)
   final_ylab <- if(!is.null(ylab)) ylab else get_term("ylab", terms[[lang]], lang)
 
+  if (is.null(x_breaks)) {
+    x_breaks <- ggplot2::waiver()
+  }
+
+  # 8. Build Plot
   p <- ggplot2::ggplot(df, ggplot2::aes(x = yr, y = val, fill = grp)) +
     ggplot2::geom_area(alpha = 0.8, color = "white", linewidth = 0.3,
                        position = ggplot2::position_stack(reverse = FALSE)) +
     ggplot2::scale_fill_manual(values = col_palette) +
-    ggplot2::scale_x_continuous(expand = c(0, 0)) +
+    ggplot2::scale_x_continuous(expand = c(0, 0), breaks = x_breaks) +
     ggplot2::scale_y_continuous(labels = scales::comma,
                                 expand = ggplot2::expansion(mult = c(0, 0.15)),
                                 breaks = y_breaks) +
