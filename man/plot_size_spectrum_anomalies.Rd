@@ -25,7 +25,7 @@ plot_size_spectrum_anomalies(
 
 \item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores.}
 
-\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values before anomaly calculation.}
+\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values.}
 
 \item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
@@ -34,6 +34,5 @@ A \code{patchwork} object with two stacked panels (A and B).
 }
 \description{
 Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-Features a binned color scale where values within 0.5 are white and values exceeding
-+/- 3 are capped at the darkest colors.
+Features a binned color scale based on the provided reference.
 }
