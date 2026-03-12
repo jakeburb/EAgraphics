@@ -1866,3 +1866,102 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
     method = method_used
   ))
 }
+
+#' Plot Size Spectrum Anomalies
+#'
+#' @description
+#' Creates a two-panel stacked heatmap of size spectrum anomalies for EAR 100 and 200.
+#' Automatically extracts size classes from variable names (e.g., 'from15to25' to '[15-25[')
+#' and ensures perfectly aligned x-axes even with different start dates.
+#'
+#' @param data A data frame containing 'year', 'EAR', 'variable', and 'value'.
+#' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
+#' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
+#'        Defaults to the full range of the data.
+#' @param x_breaks Optional numeric vector for x-axis tick marks.
+#' @param base_size Numeric. Base font size. Defaults to 14.
+#' @param color_limits Numeric vector of length 2 for the anomaly scale. Defaults to \code{c(-3, 3)}.
+#'
+#' @return A \code{patchwork} object with two stacked panels (A and B).
+#'
+#' @examples
+#' \dontrun{
+#' # 1. Basic plot with automatic year range
+#' plot_size_spectrum_anomalies(size.spectrum.data.gsl)
+#'
+#' # 2. French version with a fixed timeline and custom breaks
+#' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
+#'                              lang = "fr",
+#'                              year_range = c(1985, 2025),
+#'                              x_breaks = seq(1985, 2025, 5))
+#' }
+#' @export
+plot_size_spectrum_anomalies <- function(data,
+                                         lang = "en",
+                                         year_range = NULL,
+                                         x_breaks = NULL,
+                                         base_size = 14,
+                                         color_limits = c(-3, 3)) {
+
+  # 1. Dictionary
+  terms <- list(
+    en = c(xlab = "Year", ylab = "Length class (cm)", leg = "Anomaly",
+           t100 = "EAR 100", t200 = "EAR 200"),
+    fr = c(xlab = "Année", ylab = "Classe de longueur (cm)", leg = "Anomalie",
+           t100 = "EAR 100", t200 = "EAR 200")
+  )
+
+  # 2. Global Timeline logic
+  if (!is.null(year_range)) {
+    global_min <- year_range[1]
+    global_max <- year_range[2]
+    data <- data |> dplyr::filter(year >= global_min, year <= global_max)
+  } else {
+    global_min <- min(data$year, na.rm = TRUE)
+    global_max <- max(data$year, na.rm = TRUE)
+  }
+
+  # 3. Data Cleaning
+  df <- data |>
+    dplyr::mutate(
+      nums = stringr::str_extract_all(variable, "\\d+"),
+      low = purrr::map_chr(nums, ~ .x[1]),
+      high = purrr::map_chr(nums, ~ .x[2]),
+      size_grp = paste0("[", low, "-", high, "["),
+      size_grp = stats::reorder(size_grp, as.numeric(low))
+    )
+
+  # 4. Panel Builder Helper
+  make_panel <- function(sub_data, title_key, show_x = TRUE) {
+    ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = value)) +
+      ggplot2::geom_tile(color = "white", linewidth = 0.1) +
+      ggplot2::scale_fill_gradient2(low = "#0000FF", mid = "white", high = "#FF0000",
+                                    midpoint = 0, limits = color_limits, oob = scales::squish) +
+      ggplot2::scale_x_continuous(expand = c(0, 0),
+                                  limits = c(global_min, global_max),
+                                  breaks = x_breaks %||% ggplot2::waiver()) +
+      ggplot2::labs(subtitle = terms[[lang]][[title_key]],
+                    x = if(show_x) terms[[lang]][["xlab"]] else NULL,
+                    y = terms[[lang]][["ylab"]],
+                    fill = terms[[lang]][["leg"]]) +
+      ggplot2::theme_bw(base_size = base_size) +
+      ggplot2::theme(
+        panel.grid = ggplot2::element_blank(),
+        plot.subtitle = ggplot2::element_text(face = "bold", hjust = 0),
+        axis.text.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_text(),
+        axis.ticks.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_line()
+      )
+  }
+
+  # 5. Assemble using patchwork syntax
+  p1 <- make_panel(dplyr::filter(df, EAR == 100), "t100", show_x = FALSE)
+  p2 <- make_panel(dplyr::filter(df, EAR == 200), "t200", show_x = TRUE)
+
+  # Combine
+  combined_plot <- (p1 / p2) +
+    patchwork::plot_layout(guides = "collect") +
+    patchwork::plot_annotation(tag_levels = 'A') &
+    ggplot2::theme(legend.position = "bottom", legend.key.width = ggplot2::unit(1.5, "cm"))
+
+  return(combined_plot)
+}
