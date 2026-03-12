@@ -1871,15 +1871,14 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'
 #' @description
 #' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-#' Features a binned color scale where values within 0.5 are white and values exceeding
-#' +/- 3 are capped at the darkest colors.
+#' Features a binned color scale based on the provided reference.
 #'
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value'.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
-#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values before anomaly calculation.
+#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values.
 #' @param base_size Numeric. Base font size. Defaults to 14.
 #'
 #' @return A \code{patchwork} object with two stacked panels (A and B).
@@ -1920,42 +1919,43 @@ plot_size_spectrum_anomalies <- function(data,
       size_grp = stats::reorder(size_grp, as.numeric(low))
     )
 
-  # 3. Timeline Alignment
+  # 3. Corrected Timeline Logic
+  # We find the global min/max before applying any year_range filters
+  absolute_min <- min(data$year, na.rm = TRUE)
+  absolute_max <- max(data$year, na.rm = TRUE)
+
   if (!is.null(year_range)) {
     global_min <- year_range[1]
     global_max <- year_range[2]
     df <- df |> dplyr::filter(year >= global_min, year <= global_max)
   } else {
-    global_min <- min(df$year, na.rm = TRUE)
-    global_max <- max(df$year, na.rm = TRUE)
+    global_min <- absolute_min
+    global_max <- absolute_max
   }
 
   # 4. Panel Builder
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
       ggplot2::geom_tile(color = "black", linewidth = 0.2) +
-      # Use scale_fill_steps2 for the binned look from your image
+      # Binned scale to match reference
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
         high = "#FF0000",
         midpoint = 0,
-        # Exact breaks from image_7f8f12.png
         breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
         limits = c(-3.1, 3.1),
         oob = scales::squish,
         na.value = "transparent",
         guide = ggplot2::guide_colorsteps(
-          barwidth = 20,
-          barheight = 1,
-          show.limits = TRUE,
-          title.position = "top",
-          title.hjust = 0.5
+          barwidth = 20, barheight = 1, show.limits = TRUE,
+          title.position = "top", title.hjust = 0.5
         )
       ) +
-      ggplot2::scale_x_continuous(expand = c(0, 0),
+      # Small expansion ensures 1984 tile is fully visible
+      ggplot2::scale_x_continuous(expand = c(0.01, 0),
                                   limits = c(global_min, global_max),
-                                  breaks = x_breaks %||% ggplot2::waiver()) +
+                                  breaks = x_breaks %||% seq(global_min, global_max, 5)) +
       ggplot2::labs(x = if(show_x) terms[[lang]][["xlab"]] else NULL,
                     y = terms[[lang]][["ylab"]],
                     fill = terms[[lang]][["leg"]]) +
