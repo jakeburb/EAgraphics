@@ -37,7 +37,7 @@ A \code{patchwork} object with two stacked panels (A and B).
 Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
 Uses a binned color scale strictly following specified limits.
 Aligns x-axes perfectly across a shared timeline, ensuring the earliest year (1984)
-is fully rendered.
+and the most recent years are fully rendered.
 }
 \examples{
 \dontrun{
