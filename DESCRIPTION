@@ -19,6 +19,7 @@ Depends:
     rlang,
     dplyr,
     mgcv,
+    patchwork,
     R (>= 3.5)
 Remotes:
 	Github::duplisea/gslea,
