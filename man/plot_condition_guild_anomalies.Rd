@@ -15,19 +15,31 @@ plot_condition_guild_anomalies(
 \arguments{
 \item{data}{A data frame containing 'year', 'EAR', 'HabitatGuild', and 'value'.}
 
-\item{lang}{Language for labels: \code{"en"} or \code{"fr"}.}
+\item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Optional numeric vector \code{c(start, end)}.}
+\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.}
 
 \item{x_breaks}{Optional numeric vector for x-axis ticks.}
 
 \item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
 \value{
-A \code{patchwork} object with two stacked panels.
+A \code{patchwork} object with two stacked panels (A and B).
 }
 \description{
-Calculates and visualizes condition Z-score anomalies for specific habitat guilds
-and a combined "All" group. Stacks EAR 100 and 200 with aligned x-axes and
-the binned color scale from image.
+Calculates and visualizes condition Z-score anomalies for habitat guilds
+(Pelagic, Benthopelagic, Benthic, Demersal) and a combined "All" group.
+Stacks EAR 100 (nGSL) and 200 (sGSL) with aligned axes and binned color scale.
+}
+\examples{
+\dontrun{
+# 1. Standard English plot with automatic year range
+plot_condition_guild_anomalies(CONsGSL, lang = "en")
+
+# 2. French version with specific timeline and 5-year breaks
+plot_condition_guild_anomalies(CONsGSL,
+                               lang = "fr",
+                               year_range = c(1984, 2024),
+                               x_breaks = seq(1984, 2024, 5))
+}
 }
