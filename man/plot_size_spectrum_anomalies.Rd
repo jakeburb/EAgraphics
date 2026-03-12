@@ -9,41 +9,53 @@ plot_size_spectrum_anomalies(
   lang = "en",
   year_range = NULL,
   x_breaks = NULL,
+  standardize = TRUE,
   base_size = 14,
-  color_limits = c(-3, 3)
+  color_limits = NULL
 )
 }
 \arguments{
-\item{data}{A data frame containing 'year', 'EAR', 'variable', and 'value'.}
+\item{data}{A data frame containing 'year', 'EAR', 'variable' (e.g., 'size.class.abund.from15to25'),
+and 'value' (raw counts or biomass).}
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
 \item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.
-Defaults to the full range of the data.}
+Defaults to the full range found in the data.}
 
 \item{x_breaks}{Optional numeric vector for x-axis tick marks.}
 
-\item{base_size}{Numeric. Base font size. Defaults to 14.}
+\item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores ((x - mean) / sd).
+If \code{FALSE}, only centers the data (x - mean).}
 
-\item{color_limits}{Numeric vector of length 2 for the anomaly scale. Defaults to \code{c(-3, 3)}.}
+\item{base_size}{Numeric. Base font size for the plot. Defaults to 14.}
+
+\item{color_limits}{Numeric vector for the anomaly scale. Defaults to \code{NULL}
+to calculate a symmetrical range automatically based on the data.}
 }
 \value{
 A \code{patchwork} object with two stacked panels (A and B).
 }
 \description{
-Creates a two-panel stacked heatmap of size spectrum anomalies for EAR 100 and 200.
-Automatically extracts size classes from variable names (e.g., 'from15to25' to '[15-25[')
-and ensures perfectly aligned x-axes even with different start dates.
+Calculates and visualizes size spectrum anomalies from raw data.
+Standardizes values by size class and region (EAR), then creates a two-panel
+stacked heatmap for EAR 100 and 200. The function ensures perfectly aligned
+x-axes even if the time series lengths differ.
 }
 \examples{
 \dontrun{
-# 1. Basic plot with automatic year range
+# 1. Basic plot with automatic anomaly calculation and year range
 plot_size_spectrum_anomalies(size.spectrum.data.gsl)
 
-# 2. French version with a fixed timeline and custom breaks
+# 2. French version with a fixed timeline (1985-2025) and custom x-axis breaks
 plot_size_spectrum_anomalies(size.spectrum.data.gsl,
                              lang = "fr",
                              year_range = c(1985, 2025),
                              x_breaks = seq(1985, 2025, 5))
+
+# 3. Centered anomalies only (not standardized by SD) with custom color limits
+plot_size_spectrum_anomalies(size.spectrum.data.gsl,
+                             standardize = FALSE,
+                             color_limits = c(-5, 5))
 }
 }
