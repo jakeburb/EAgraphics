@@ -26,7 +26,7 @@ Defaults to the full range found in the data (e.g., 1984-2025).}
 
 \item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores.}
 
-\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values.}
+\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values before calculation.}
 
 \item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
@@ -34,13 +34,20 @@ Defaults to the full range found in the data (e.g., 1984-2025).}
 A \code{patchwork} object with two stacked panels (A) and (B).
 }
 \description{
-Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-Uses a binned color scale with explicit '<-3' and '>3' labels.
-Aligns x-axes perfectly across a shared timeline, ensuring 1984 and
-edge years are fully rendered.
+Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions; the nGSL and sGSL
+Uses a binned color scale with explicit '<-3' and '>3' labels as per reference
+standards. Aligns x-axes perfectly across a shared timeline, ensuring 1984
+and edge years are fully rendered without clipping.
 }
 \examples{
 \dontrun{
+# 1. Basic plot with binned scale and automatic year detection
 plot_size_spectrum_anomalies(size.spectrum.data.gsl)
+
+# 2. French version with a specific year range and 5-year increments
+plot_size_spectrum_anomalies(size.spectrum.data.gsl,
+                             lang = "fr",
+                             year_range = c(1984, 2024),
+                             x_breaks = seq(1984, 2024, 5))
 }
 }

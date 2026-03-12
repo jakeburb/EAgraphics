@@ -1870,10 +1870,10 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #' Plot Size Spectrum Anomalies
 #'
 #' @description
-#' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-#' Uses a binned color scale with explicit '<-3' and '>3' labels.
-#' Aligns x-axes perfectly across a shared timeline, ensuring 1984 and
-#' edge years are fully rendered.
+#' Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions; the nGSL and sGSL
+#' Uses a binned color scale with explicit '<-3' and '>3' labels as per reference
+#' standards. Aligns x-axes perfectly across a shared timeline, ensuring 1984
+#' and edge years are fully rendered without clipping.
 #'
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
@@ -1881,14 +1881,21 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'        Defaults to the full range found in the data (e.g., 1984-2025).
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
-#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values.
+#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values before calculation.
 #' @param base_size Numeric. Base font size. Defaults to 14.
 #'
 #' @return A \code{patchwork} object with two stacked panels (A) and (B).
 #'
 #' @examples
 #' \dontrun{
+#' # 1. Basic plot with binned scale and automatic year detection
 #' plot_size_spectrum_anomalies(size.spectrum.data.gsl)
+#'
+#' # 2. French version with a specific year range and 5-year increments
+#' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
+#'                              lang = "fr",
+#'                              year_range = c(1984, 2024),
+#'                              x_breaks = seq(1984, 2024, 5))
 #' }
 #' @export
 plot_size_spectrum_anomalies <- function(data,
@@ -1949,7 +1956,7 @@ plot_size_spectrum_anomalies <- function(data,
         mid = "white",
         high = "#FF0000",
         midpoint = 0,
-        # Breaks now include the limits to satisfy the warning's logic
+        # Breaks include the exact points for labeling
         breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
         labels = c("<-3", "-2", "-1", "-0.5", "0.5", "1", "2", ">3"),
         limits = c(-3, 3),
@@ -1958,7 +1965,7 @@ plot_size_spectrum_anomalies <- function(data,
         guide = ggplot2::guide_colorsteps(
           barwidth = 20,
           barheight = 1,
-          # Removed show.limits = TRUE to stop the warning
+          show.limits = FALSE, # Set to FALSE to prevent the "ignored" warning
           title.position = "top",
           title.hjust = 0.5
         )
