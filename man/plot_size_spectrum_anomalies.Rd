@@ -11,51 +11,29 @@ plot_size_spectrum_anomalies(
   x_breaks = NULL,
   standardize = TRUE,
   log_transform = TRUE,
-  base_size = 14,
-  color_limits = NULL
+  base_size = 14
 )
 }
 \arguments{
-\item{data}{A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).}
+\item{data}{A data frame containing 'year', 'EAR', 'variable', and 'value'.}
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.
-Defaults to the full range found in the data.}
+\item{year_range}{Optional numeric vector \code{c(start, end)} to set a fixed timeline.}
 
 \item{x_breaks}{Optional numeric vector for x-axis tick marks.}
 
-\item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores.
-If \code{FALSE}, only centers the data (x - mean).}
+\item{standardize}{Logical. If \code{TRUE} (default), calculates Z-scores.}
 
-\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values
-before calculating anomalies. Highly recommended for abundance/biomass data
-to ensure blue (negative) anomalies are visible.}
+\item{log_transform}{Logical. If \code{TRUE} (default), log-transforms values before anomaly calculation.}
 
-\item{base_size}{Numeric. Base font size for the plot. Defaults to 14.}
-
-\item{color_limits}{Numeric vector for the anomaly scale. Defaults to \code{NULL}
-to calculate a symmetrical range based on the 95th percentile of anomalies.}
+\item{base_size}{Numeric. Base font size. Defaults to 14.}
 }
 \value{
 A \code{patchwork} object with two stacked panels (A and B).
 }
 \description{
 Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-Standardizes raw values by size class within each region and aligns x-axes
-across a shared timeline, even if one time series is shorter.
-Variable names like 'size.class.abund.from15to25' are automatically
-reformatted to '[15-25['.
-}
-\examples{
-\dontrun{
-# 1. Standard plot with log-transformed standardized anomalies
-plot_size_spectrum_anomalies(size.spectrum.data.gsl)
-
-# 2. French version with manual year range and custom breaks
-plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-                             lang = "fr",
-                             year_range = c(1985, 2025),
-                             x_breaks = seq(1985, 2025, 5))
-}
+Features a binned color scale where values within 0.5 are white and values exceeding
++/- 3 are capped at the darkest colors.
 }

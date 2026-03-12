@@ -1871,38 +1871,18 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'
 #' @description
 #' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-#' Standardizes raw values by size class within each region and aligns x-axes
-#' across a shared timeline, even if one time series is shorter.
-#' Variable names like 'size.class.abund.from15to25' are automatically
-#' reformatted to '[15-25['.
+#' Features a binned color scale where values within 0.5 are white and values exceeding
+#' +/- 3 are capped at the darkest colors.
 #'
-#' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
+#' @param data A data frame containing 'year', 'EAR', 'variable', and 'value'.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
-#'        Defaults to the full range found in the data.
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
-#'        If \code{FALSE}, only centers the data (x - mean).
-#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values
-#'        before calculating anomalies. Highly recommended for abundance/biomass data
-#'        to ensure blue (negative) anomalies are visible.
-#' @param base_size Numeric. Base font size for the plot. Defaults to 14.
-#' @param color_limits Numeric vector for the anomaly scale. Defaults to \code{NULL}
-#'        to calculate a symmetrical range based on the 95th percentile of anomalies.
+#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values before anomaly calculation.
+#' @param base_size Numeric. Base font size. Defaults to 14.
 #'
 #' @return A \code{patchwork} object with two stacked panels (A and B).
-#'
-#' @examples
-#' \dontrun{
-#' # 1. Standard plot with log-transformed standardized anomalies
-#' plot_size_spectrum_anomalies(size.spectrum.data.gsl)
-#'
-#' # 2. French version with manual year range and custom breaks
-#' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-#'                              lang = "fr",
-#'                              year_range = c(1985, 2025),
-#'                              x_breaks = seq(1985, 2025, 5))
-#' }
 #' @export
 plot_size_spectrum_anomalies <- function(data,
                                          lang = "en",
@@ -1910,25 +1890,22 @@ plot_size_spectrum_anomalies <- function(data,
                                          x_breaks = NULL,
                                          standardize = TRUE,
                                          log_transform = TRUE,
-                                         base_size = 14,
-                                         color_limits = NULL) {
+                                         base_size = 14) {
 
-  # 1. Dictionary for Labels
+  # 1. Dictionary
   terms <- list(
     en = c(xlab = "Year", ylab = "Length class (cm)", leg = "Anomaly"),
     fr = c(xlab = "Année", ylab = "Classe de longueur (cm)", leg = "Anomalie")
   )
 
   # 2. Independent Anomaly Calculation
-  # We group by EAR and Variable to treat them as independent systems
   df <- data |>
     dplyr::mutate(working_val = if(log_transform) log1p(value) else value) |>
     dplyr::group_by(EAR, variable) |>
     dplyr::mutate(
       mean_val = mean(working_val, na.rm = TRUE),
       sd_val   = sd(working_val, na.rm = TRUE),
-      # Calculate Anomaly
-      anomaly = if(standardize) {
+      anomaly  = if(standardize) {
         dplyr::if_else(sd_val > 0, (working_val - mean_val) / sd_val, 0)
       } else {
         working_val - mean_val
@@ -1936,7 +1913,6 @@ plot_size_spectrum_anomalies <- function(data,
     ) |>
     dplyr::ungroup() |>
     dplyr::mutate(
-      # Extract numbers from "from15to25" -> "[15-25["
       nums = stringr::str_extract_all(variable, "\\d+"),
       low  = purrr::map_chr(nums, ~ .x[1]),
       high = purrr::map_chr(nums, ~ .x[2]),
@@ -1944,11 +1920,7 @@ plot_size_spectrum_anomalies <- function(data,
       size_grp = stats::reorder(size_grp, as.numeric(low))
     )
 
-  # 3. Diagnostic Output
-  message("Calculated Anomaly Range: ",
-          paste(round(range(df$anomaly, na.rm = TRUE), 2), collapse = " to "))
-
-  # 4. Handle Timeline Alignment
+  # 3. Timeline Alignment
   if (!is.null(year_range)) {
     global_min <- year_range[1]
     global_max <- year_range[2]
@@ -1958,22 +1930,29 @@ plot_size_spectrum_anomalies <- function(data,
     global_max <- max(df$year, na.rm = TRUE)
   }
 
-  # 5. Dynamic Color Scale Logic
-  if (is.null(color_limits)) {
-    # Use 95th percentile to ensure outliers don't "wash out" the blue/red contrast
-    limit_val <- stats::quantile(abs(df$anomaly), 0.95, na.rm = TRUE)
-    if(limit_val == 0) limit_val <- max(abs(df$anomaly), na.rm = TRUE)
-    color_limits <- c(-limit_val, limit_val)
-  }
-
-  # 6. Panel Builder Helper
+  # 4. Panel Builder
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
-      ggplot2::geom_tile(color = "white", linewidth = 0.1) +
-      # Gradient2 ensures 0 is white, Negative is Blue, Positive is Red
-      ggplot2::scale_fill_gradient2(low = "#0000FF", mid = "white", high = "#FF0000",
-                                    midpoint = 0, limits = color_limits,
-                                    oob = scales::squish, na.value = "transparent") +
+      ggplot2::geom_tile(color = "black", linewidth = 0.2) +
+      # Use scale_fill_steps2 for the binned look from your image
+      ggplot2::scale_fill_steps2(
+        low = "#0000FF",
+        mid = "white",
+        high = "#FF0000",
+        midpoint = 0,
+        # Exact breaks from image_7f8f12.png
+        breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
+        limits = c(-3.1, 3.1),
+        oob = scales::squish,
+        na.value = "transparent",
+        guide = ggplot2::guide_colorsteps(
+          barwidth = 20,
+          barheight = 1,
+          show.limits = TRUE,
+          title.position = "top",
+          title.hjust = 0.5
+        )
+      ) +
       ggplot2::scale_x_continuous(expand = c(0, 0),
                                   limits = c(global_min, global_max),
                                   breaks = x_breaks %||% ggplot2::waiver()) +
@@ -1983,18 +1962,17 @@ plot_size_spectrum_anomalies <- function(data,
       ggplot2::theme_bw(base_size = base_size) +
       ggplot2::theme(
         panel.grid = ggplot2::element_blank(),
-        axis.text.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_text(),
+        axis.text.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_text(angle = 90, vjust = 0.5),
         axis.ticks.x = if(!show_x) ggplot2::element_blank() else ggplot2::element_line()
       )
   }
 
-  # 7. Assemble with patchwork
+  # 5. Assemble
   p1 <- make_panel(dplyr::filter(df, EAR == 100), show_x = FALSE)
   p2 <- make_panel(dplyr::filter(df, EAR == 200), show_x = TRUE)
 
-  # Combine: / stacks vertically, collect legend at bottom, add A/B tags
   (p1 / p2) +
     patchwork::plot_layout(guides = "collect") +
     patchwork::plot_annotation(tag_levels = 'A') &
-    ggplot2::theme(legend.position = "bottom", legend.key.width = ggplot2::unit(1.5, "cm"))
+    ggplot2::theme(legend.position = "bottom")
 }
