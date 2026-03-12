@@ -1871,17 +1871,32 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'
 #' @description
 #' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
-#' Features a binned color scale based on the provided reference.
+#' Uses a binned color scale strictly following specified limits.
+#' Aligns x-axes perfectly across a shared timeline, ensuring the earliest year (1984)
+#' is fully rendered.
 #'
-#' @param data A data frame containing 'year', 'EAR', 'variable', and 'value'.
+#' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
 #' @param year_range Optional numeric vector \code{c(start, end)} to set a fixed timeline.
+#'        Defaults to the full range found in the data (e.g., 1984-2025).
 #' @param x_breaks Optional numeric vector for x-axis tick marks.
 #' @param standardize Logical. If \code{TRUE} (default), calculates Z-scores.
-#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values.
+#' @param log_transform Logical. If \code{TRUE} (default), log-transforms values before calculation.
 #' @param base_size Numeric. Base font size. Defaults to 14.
 #'
 #' @return A \code{patchwork} object with two stacked panels (A and B).
+#'
+#' @examples
+#' \dontrun{
+#' # 1. Basic plot starting from 1984 with default binned scale
+#' plot_size_spectrum_anomalies(size.spectrum.data.gsl)
+#'
+#' # 2. French version with a specific year range and 10-year breaks
+#' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
+#'                              lang = "fr",
+#'                              year_range = c(1984, 2024),
+#'                              x_breaks = seq(1984, 2024, 10))
+#' }
 #' @export
 plot_size_spectrum_anomalies <- function(data,
                                          lang = "en",
@@ -1919,25 +1934,23 @@ plot_size_spectrum_anomalies <- function(data,
       size_grp = stats::reorder(size_grp, as.numeric(low))
     )
 
-  # 3. Corrected Timeline Logic
-  # We find the global min/max before applying any year_range filters
-  absolute_min <- min(data$year, na.rm = TRUE)
-  absolute_max <- max(data$year, na.rm = TRUE)
+  # 3. Timeline Alignment Logic
+  data_min <- min(df$year, na.rm = TRUE)
+  data_max <- max(df$year, na.rm = TRUE)
 
   if (!is.null(year_range)) {
     global_min <- year_range[1]
     global_max <- year_range[2]
-    df <- df |> dplyr::filter(year >= global_min, year <= global_max)
   } else {
-    global_min <- absolute_min
-    global_max <- absolute_max
+    global_min <- data_min
+    global_max <- data_max
   }
 
-  # 4. Panel Builder
+  # 4. Panel Builder Helper
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
       ggplot2::geom_tile(color = "black", linewidth = 0.2) +
-      # Binned scale to match reference
+      # Binned Scale strictly following image_7f1f0d.png
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
@@ -1952,9 +1965,9 @@ plot_size_spectrum_anomalies <- function(data,
           title.position = "top", title.hjust = 0.5
         )
       ) +
-      # Small expansion ensures 1984 tile is fully visible
-      ggplot2::scale_x_continuous(expand = c(0.01, 0),
-                                  limits = c(global_min, global_max),
+      # Limits buffer of 0.5 ensures the 1984 tile is not cut in half
+      ggplot2::scale_x_continuous(expand = c(0, 0),
+                                  limits = c(global_min - 0.5, global_max + 0.5),
                                   breaks = x_breaks %||% seq(global_min, global_max, 5)) +
       ggplot2::labs(x = if(show_x) terms[[lang]][["xlab"]] else NULL,
                     y = terms[[lang]][["ylab"]],
@@ -1967,7 +1980,7 @@ plot_size_spectrum_anomalies <- function(data,
       )
   }
 
-  # 5. Assemble
+  # 5. Assemble with patchwork
   p1 <- make_panel(dplyr::filter(df, EAR == 100), show_x = FALSE)
   p2 <- make_panel(dplyr::filter(df, EAR == 200), show_x = TRUE)
 
