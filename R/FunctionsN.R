@@ -1873,7 +1873,7 @@ plot.size.spectrum.slopes.f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #' Calculates and visualizes size spectrum anomalies independently for EAR 100 and 200.
 #' Uses a binned color scale strictly following specified limits.
 #' Aligns x-axes perfectly across a shared timeline, ensuring the earliest year (1984)
-#' is fully rendered.
+#' and the most recent years are fully rendered.
 #'
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
@@ -1949,8 +1949,9 @@ plot_size_spectrum_anomalies <- function(data,
   # 4. Panel Builder Helper
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
-      ggplot2::geom_tile(color = "black", linewidth = 0.2) +
-      # Binned Scale strictly following image_7f1f0d.png
+      # Added na.rm = TRUE to prevent warning messages on edge tiles
+      ggplot2::geom_tile(color = "black", linewidth = 0.2, na.rm = TRUE) +
+      # Binned Scale
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
@@ -1965,8 +1966,8 @@ plot_size_spectrum_anomalies <- function(data,
           title.position = "top", title.hjust = 0.5
         )
       ) +
-      # Limits buffer of 0.5 ensures the 1984 tile is not cut in half
-      ggplot2::scale_x_continuous(expand = c(0, 0),
+      # Using expand = expansion() to ensure edge tiles (1984) are not dropped
+      ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0, add = 0.6),
                                   limits = c(global_min - 0.5, global_max + 0.5),
                                   breaks = x_breaks %||% seq(global_min, global_max, 5)) +
       ggplot2::labs(x = if(show_x) terms[[lang]][["xlab"]] else NULL,
@@ -1980,7 +1981,7 @@ plot_size_spectrum_anomalies <- function(data,
       )
   }
 
-  # 5. Assemble with patchwork
+  # 5. Assemble
   p1 <- make_panel(dplyr::filter(df, EAR == 100), show_x = FALSE)
   p2 <- make_panel(dplyr::filter(df, EAR == 200), show_x = TRUE)
 
