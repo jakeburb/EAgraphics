@@ -1893,9 +1893,8 @@ plot_size_spectrum_slopes_f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #' Plot Size Spectrum Anomalies
 #'
 #' @description
-#' Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions; the nGSL and sGSL
-#' Uses a binned color scale with explicit '<-3' and '>3' labels as per reference
-#' standards. Aligns x-axes perfectly across a shared timeline, ensuring 1984
+#' Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions: the nGSL and sGSL.
+#' Uses a binned color scale with explicit '<-3' and '>3' labels. Aligns x-axes perfectly across a shared timeline, ensuring 1984
 #' and edge years are fully rendered without clipping.
 #'
 #' @param data A data frame containing 'year', 'EAR', 'variable', and 'value' (raw data).
@@ -1916,9 +1915,9 @@ plot_size_spectrum_slopes_f = function(years, EAR, min_points = 5, gam_k = 5, ..
 #'
 #' # 2. French version with a specific year range and 5-year increments
 #' plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-#'                              lang = "fr",
-#'                              year_range = c(1984, 2024),
-#'                              x_breaks = seq(1984, 2024, 5))
+#'                               lang = "fr",
+#'                               year_range = c(1984, 2024),
+#'                               x_breaks = seq(1984, 2024, 5))
 #' }
 #' @export
 plot_size_spectrum_anomalies <- function(data,
@@ -1973,13 +1972,12 @@ plot_size_spectrum_anomalies <- function(data,
   make_panel <- function(sub_data, show_x = TRUE) {
     ggplot2::ggplot(sub_data, ggplot2::aes(x = year, y = size_grp, fill = anomaly)) +
       ggplot2::geom_tile(color = "black", linewidth = 0.2, na.rm = TRUE) +
-      # Binned Scale strictly following image
+      # Binned Scale strictly following scientific reporting standards
       ggplot2::scale_fill_steps2(
         low = "#0000FF",
         mid = "white",
         high = "#FF0000",
         midpoint = 0,
-        # Breaks include the exact points for labeling
         breaks = c(-3, -2, -1, -0.5, 0.5, 1, 2, 3),
         labels = c("<-3", "-2", "-1", "-0.5", "0.5", "1", "2", ">3"),
         limits = c(-3, 3),
@@ -1988,12 +1986,16 @@ plot_size_spectrum_anomalies <- function(data,
         guide = ggplot2::guide_colorsteps(
           barwidth = 20,
           barheight = 1,
-          show.limits = FALSE, # Set to FALSE to prevent the "ignored" warning
+          show.limits = FALSE,
           title.position = "top",
-          title.hjust = 0.5
+          title.hjust = 0.5,
+          # Outline and ticks to prevent 'white-out' in the center of the bar
+          frame.colour = "black",
+          frame.linewidth = 0.5,
+          ticks.colour = "black",
+          ticks.linewidth = 0.5
         )
       ) +
-      # expansion(add = 0.6) prevents the 1984 clipping issue
       ggplot2::scale_x_continuous(expand = ggplot2::expansion(mult = 0, add = 0.6),
                                   limits = c(global_min - 0.5, global_max + 0.5),
                                   breaks = x_breaks %||% seq(global_min, global_max, 5)) +
@@ -2017,7 +2019,6 @@ plot_size_spectrum_anomalies <- function(data,
     patchwork::plot_annotation(tag_levels = 'A') &
     ggplot2::theme(legend.position = "bottom")
 }
-
 
 #' Plot Trophic Guild Condition Anomalies
 #'
