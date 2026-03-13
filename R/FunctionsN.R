@@ -2085,7 +2085,6 @@ plot_condition_guild_anomalies <- function(data,
       # Map to translated names from dictionary
       GuildLabel = terms[[lang]][HabitatGuild],
       # Order: Pelagic (top) -> Benthopelagic -> Benthic -> Demersal -> All (bottom)
-      # rev() is used because ggplot plots factor levels from bottom to top
       GuildLabel = factor(GuildLabel, levels = rev(c(
         terms[[lang]][["Pelagic"]],
         terms[[lang]][["Benthopelagic"]],
@@ -2116,7 +2115,12 @@ plot_condition_guild_anomalies <- function(data,
           barheight = 1,
           show.limits = FALSE,
           title.position = "top",
-          title.hjust = 0.5
+          title.hjust = 0.5,
+          # Outline settings for legend consistency
+          frame.colour = "black",
+          frame.linewidth = 0.5,
+          ticks.colour = "black",
+          ticks.linewidth = 0.5
         )
       ) +
       ggplot2::scale_x_continuous(expand = ggplot2::expansion(add = 0.6),
