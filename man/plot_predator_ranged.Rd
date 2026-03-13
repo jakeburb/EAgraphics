@@ -28,36 +28,42 @@ plot_predator_ranged(
 
 \item{val_col}{Unquoted value column. Defaults to \code{value}.}
 
-\item{year_range}{Numeric vector \code{c(start, end)}.}
+\item{year_range}{Numeric vector \code{c(start, end)} to filter the timeline.}
 
-\item{lang}{Language: \code{"en"} (default) or \code{"fr"}.}
+\item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
 \item{show_legend}{Logical. Defaults to \code{TRUE}.}
 
-\item{legend_position}{Position of the legend. Defaults to \code{c(0.05, 0.95)}.}
+\item{legend_position}{Numeric vector \code{c(x, y)} for internal placement. Defaults to \code{c(0.05, 0.95)}.}
 
-\item{y_label}{Optional string to override Y-axis label.}
+\item{y_label}{Optional string to override the default Y-axis label.}
 
-\item{base_size}{Numeric. Defaults to \code{14}.}
+\item{base_size}{Numeric. Base font size for the plot. Defaults to \code{14}.}
 
-\item{palette}{Optional color vector.}
+\item{palette}{Optional color vector. Must match the number of predators.}
 
-\item{species_metadata}{Optional mapping data frame.}
+\item{species_metadata}{Optional mapping data frame with columns: 'variable', 'en', 'fr'.}
 }
 \value{
-A \code{ggplot} object.
+A \code{ggplot} object with combined color and shape scales.
 }
 \description{
 Visualizes the relative abundance trends of key predators using a "ranged" (Min-Max)
 normalization: \eqn{(Value - Min) / (Max - Min)}. This allows comparison of species
-with different absolute population sizes. The legend automatically displays the
-original minimum and maximum values for context. The legend defaults to the
-top-left inside the plot area for a clean, publication-ready look.
+with different absolute population sizes. To support accessibility for visually
+impaired users, the function maps both color and distinct geometric shapes to
+each species. The legend displays the original min/max values for context and
+remains stable across languages.
 }
 \examples{
 \dontrun{
-# English and French will have identical legend orders (Seals -> Gannets -> Tuna)
-plot_predator_ranged(lang = "en")
-plot_predator_ranged(lang = "fr")
+# 1. Basic English plot with accessibility shapes
+plot_predator_ranged(data = my_data, lang = "en")
+
+# 2. French version with a custom year range and internal legend
+plot_predator_ranged(data = my_data,
+                     lang = "fr",
+                     year_range = c(1990, 2024),
+                     legend_position = c(0.1, 0.9))
 }
 }
