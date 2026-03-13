@@ -34,9 +34,8 @@ Defaults to the full range found in the data (e.g., 1984-2025).}
 A \code{patchwork} object with two stacked panels (A) and (B).
 }
 \description{
-Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions; the nGSL and sGSL
-Uses a binned color scale with explicit '<-3' and '>3' labels as per reference
-standards. Aligns x-axes perfectly across a shared timeline, ensuring 1984
+Calculates and visualizes size spectrum anomalies from RV surveys independently for 2 regions: the nGSL and sGSL.
+Uses a binned color scale with explicit '<-3' and '>3' labels. Aligns x-axes perfectly across a shared timeline, ensuring 1984
 and edge years are fully rendered without clipping.
 }
 \examples{
@@ -46,8 +45,8 @@ plot_size_spectrum_anomalies(size.spectrum.data.gsl)
 
 # 2. French version with a specific year range and 5-year increments
 plot_size_spectrum_anomalies(size.spectrum.data.gsl,
-                             lang = "fr",
-                             year_range = c(1984, 2024),
-                             x_breaks = seq(1984, 2024, 5))
+                              lang = "fr",
+                              year_range = c(1984, 2024),
+                              x_breaks = seq(1984, 2024, 5))
 }
 }
