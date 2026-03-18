@@ -106,7 +106,7 @@ An advanced variation of the anomaly tool designed for multi-layered datasets, s
 | **Scorecard Value** | User-supplied | **Standardized Score** ($Z-score$) |
 | **Best For** | Single time-series trends | Depth strata, areas, or species groups |
 
-##Examples
+##Examples of Use of Functions
 
 
 
