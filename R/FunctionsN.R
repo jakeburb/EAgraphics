@@ -1925,7 +1925,7 @@ plot_size_spectrum_anomalies <- function(data,
                                          year_range = NULL,
                                          x_breaks = NULL,
                                          standardize = TRUE,
-                                         log_transform = TRUE,
+                                         log_transform = FALSE,
                                          base_size = 14) {
 
   # 1. Dictionary
