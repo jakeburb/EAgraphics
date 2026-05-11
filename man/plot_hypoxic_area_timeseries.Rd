@@ -24,7 +24,17 @@ plot_hypoxic_area_timeseries(
 
 \item{x_breaks}{Optional numeric vector for x-axis tick marks.}
 
-\item{base_size}{Numeric. Base font size. Defaults to 14.}
+\item{base_size}{Numeric. Base font size. Defaults to 14.
+
+1. Standard plot with default 20% and 30% thresholds
+plot_hypoxic_area_timeseries(hypoxia_data)
+
+# 2. French version with custom thresholds and specific year range
+plot_hypoxic_area_timeseries(hypoxia_data,
+                             thresholds = c(15, 25, 35),
+                             lang = "fr",
+                             year_range = c(2000, 2025),
+                             x_breaks = seq(2000, 2025, 5))}
 }
 \description{
 Visualizes the percentage of bottom area > 100m depth with oxygen levels below
