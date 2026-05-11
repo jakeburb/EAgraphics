@@ -901,9 +901,25 @@ plot_anomaly_comp <- function(data,
 
   # 4. Scorecard Construction
   if (show_scorecard) {
-    score_palette <- c(grDevices::colorRampPalette(c("black","blue", "white"))(10),
-                       grDevices::colorRampPalette(c("white", "red", "#5D0000"))(7))
+    col_low  <- "#0000FF"
+    col_mid  <- "white"
+    col_high <- "#FF0000"
 
+    # Define the 16 bins based on your Breaks: seq(-5, 3, by = 0.5)
+    # Bins 1-9:   Negative ramp (-5.0 to -0.5)
+    # Bins 10-11: Neutral zone (-0.5 to 0.5) -> MUST BE WHITE
+    # Bins 12-16: Positive ramp (0.5 to 3.0)
+
+    score_palette <- c(
+      # 9 shades from Blue to "almost" White
+      grDevices::colorRampPalette(c(col_low, col_mid))(10)[1:9],
+      # 2 bins of pure White for the -0.5 to 0.5 range
+      rep(col_mid, 2),
+      # 5 shades from "almost" White to Red
+      grDevices::colorRampPalette(c(col_mid, col_high))(6)[2:6]
+    )
+
+    #Application
     Breaks <- seq(-5, 3, by = 0.5)
     Labels <- as.character(Breaks[-length(Breaks)])
 
@@ -912,6 +928,7 @@ plot_anomaly_comp <- function(data,
         clamped_val = pmin(pmax(std_score, -5), 2.99),
         score_bin = cut(clamped_val, breaks = Breaks, labels = Labels, include.lowest = TRUE)
       )
+
 
     p_bot <- ggplot2::ggplot(score_df, ggplot2::aes(x = year, y = 1, fill = score_bin)) +
       ggplot2::geom_tile(color = "black", linewidth = 0.25) +
