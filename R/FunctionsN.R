@@ -2462,35 +2462,37 @@ plot_hypercapnic_area_timeseries <- function(data,
 
 
 
-#' Plot Physical Trends and Scorecard
+#' Plot High-Fidelity Physical Summary
 #'
 #' @description
-#' Creates a professional two-panel figure: a time series of physical oceanographic
-#' indicators (Ice, SST, CIL, T300) and a corresponding standardized anomaly scorecard.
+#' Recreates a professional multi-panel physical summary with separate scales
+#' for Temperature and Ice, integrated with a standardized anomaly scorecard.
 #'
-#' @param data Long-format dataframe containing 'year', 'variable', and 'value'.
-#' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
-#' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1969, 2025)}.
-#' @param base_size Numeric. Base font size. Defaults to 14.
+#' @param data Long-format dataframe with 'year', 'variable', and 'value'.
+#' @param lang Language: \code{"en"} (default) or \code{"fr"}.
+#' @param year_range Numeric vector \code{c(1969, 2025)}.
+#' @param base_size Numeric. Base font size.
 #'
 #' @export
-plot_physical_summary <- function(data,
-                                  lang = "en",
-                                  year_range = c(1969, 2025),
-                                  base_size = 14) {
+plot_physical_summary_pro <- function(data,
+                                      lang = "en",
+                                      year_range = c(1969, 2025),
+                                      base_size = 11) {
 
-  # 1. Translation Dictionary
+  # 1. Dictionary and Factor Ordering
+  # Order: SST, T300, Ice, CILTmin to match line order and scorecard
+  var_order <- c("SST_combined", "T300", "IceSeasonMaxVolume", "CILTmin")
+
   terms <- list(
-    en = list(temp = "Temperature (°C)", ice = "Ice (km³)", year = "Year",
-              vars = c("IceSeasonMaxVolume" = "Ice", "SST_combined" = "SST",
-                       "CILTmin" = "CIL Tmin", "T300" = "300 m")),
-    fr = list(temp = "Température (°C)", ice = "Glace (km³)", year = "Année",
-              vars = c("IceSeasonMaxVolume" = "Glace", "SST_combined" = "SST",
-                       "CILTmin" = "CLF Tmin", "T300" = "300 m"))
+    en = list(y_temp = "Temperature (°C)", y_ice = "Ice (km³)", year = "Year",
+              labs = c("SST_combined" = "SST", "T300" = "300 m",
+                       "IceSeasonMaxVolume" = "Ice", "CILTmin" = "CIL")),
+    fr = list(y_temp = "Température (°C)", y_ice = "Glace (km³)", year = "Année",
+              labs = c("SST_combined" = "SST", "T300" = "300 m",
+                       "IceSeasonMaxVolume" = "Glace", "CILTmin" = "CLF"))
   )
 
-  # 2. Data Processing
-  # Combine SST and SST Proxy into one series with a linetype flag
+  # 2. Data Preparation & Summary Stats
   processed_data <- data |>
     dplyr::filter(year >= year_range[1], year <= year_range[2]) |>
     dplyr::mutate(
@@ -2500,58 +2502,60 @@ plot_physical_summary <- function(data,
       ),
       is_proxy = ifelse(variable == "SST Proxy", "dashed", "solid")
     ) |>
-    # Calculate anomalies for the scorecard based on the filtered period
     dplyr::group_by(display_var) |>
     dplyr::mutate(
-      anomaly = (value - mean(value, na.rm = TRUE)) / sd(value, na.rm = TRUE)
+      m = mean(value, na.rm = TRUE),
+      s = sd(value, na.rm = TRUE),
+      anomaly = (value - m) / s,
+      stat_label = paste0(round(m, 2), " ± ", round(s, 2))
     ) |>
-    dplyr::ungroup()
+    dplyr::ungroup() |>
+    dplyr::mutate(display_var = factor(display_var, levels = rev(var_order)))
 
-  # 3. Top Plot: Time Series
-  p1 <- ggplot2::ggplot(processed_data,
-                        ggplot2::aes(x = year, y = value, color = display_var)) +
-    # Draw lines with linetype mapping for the SST Proxy
-    ggplot2::geom_line(ggplot2::aes(linetype = is_proxy), linewidth = 1) +
-    # The reference uses specific colors
+  # 3. Top Plot: Time Series with Dual Axis
+  # To separate lines, we use a secondary axis for Ice
+  p1 <- ggplot2::ggplot(processed_data, ggplot2::aes(x = year, y = value, color = display_var)) +
+    ggplot2::geom_line(ggplot2::aes(linetype = is_proxy), linewidth = 0.8) +
+    # Horizontal mean lines
+    ggplot2::geom_hline(ggplot2::aes(yintercept = m, color = display_var), alpha = 0.3, linetype = "dotted") +
     ggplot2::scale_color_manual(values = c(
-      "SST_combined" = "#D55E00",
-      "T300" = "#009E73",
-      "IceSeasonMaxVolume" = "#4B0082", # Dark Purple
-      "CILTmin" = "#0072B2"
+      "SST_combined" = "#D55E00", "T300" = "#009E73",
+      "IceSeasonMaxVolume" = "#4B0082", "CILTmin" = "#0072B2"
     )) +
     ggplot2::scale_linetype_identity() +
+    # Dual Axis: Left for Temp (-1 to 12), Right for Ice (0 to 140)
+    ggplot2::scale_y_continuous(
+      name = terms[[lang]]$y_temp,
+      limits = c(-1, 12),
+      sec.axis = ggplot2::sec_axis(~ . * 11, name = terms[[lang]]$y_ice)
+    ) +
     ggplot2::scale_x_continuous(limits = year_range, expand = c(0,0)) +
-    ggplot2::labs(y = terms[[lang]]$temp, x = NULL) +
     ggplot2::theme_bw(base_size = base_size) +
-    ggplot2::theme(
-      panel.grid.minor = ggplot2::element_blank(),
-      legend.position = "none",
-      plot.margin = ggplot2::margin(b = 0) # Tighten space to scorecard
-    )
+    ggplot2::theme(panel.grid.minor = ggplot2::element_blank(), legend.position = "none",
+                   axis.title.x = ggplot2::element_blank(), axis.text.x = ggplot2::element_blank())
 
-  # 4. Bottom Plot: Scorecard (Standardized Anomalies)
-  p2 <- ggplot2::ggplot(processed_data,
-                        ggplot2::aes(x = year, y = display_var, fill = anomaly)) +
+  # 4. Bottom Plot: Scorecard with Stats Labels
+  p2 <- ggplot2::ggplot(processed_data, ggplot2::aes(x = year, y = display_var, fill = anomaly)) +
     ggplot2::geom_tile(color = "black", linewidth = 0.1) +
-    # Use the 0.5 increment logic from previous reviewer feedback
+    # Standardized Anomaly Scale
     ggplot2::scale_fill_stepsn(
       colors = c("#0000FF", "#7069FF", "#FFFFFF", "#FF7B5C", "#FF0000"),
-      breaks = seq(-2, 2, by = 0.5),
-      limits = c(-2.25, 2.25),
-      oob = scales::squish,
-      guide = ggplot2::guide_colorsteps(barwidth = 15, barheight = 0.5, title = "Anomaly")
+      breaks = c(-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5),
+      limits = c(-3.5, 3.5), oob = scales::squish
     ) +
-    ggplot2::scale_x_continuous(limits = year_range, breaks = seq(year_range[1], year_range[2], 5), expand = c(0,0)) +
+    # Add the Mean ± SD text to the right of the tiles
+    ggplot2::geom_text(data = dplyr::distinct(processed_data, display_var, stat_label),
+                       ggplot2::aes(x = year_range[2] + 1, label = stat_label),
+                       hjust = 0, size = base_size * 0.28, inherit.aes = FALSE) +
+    ggplot2::scale_x_continuous(limits = c(year_range[1], year_range[2] + 8),
+                                breaks = seq(year_range[1], year_range[2], 5), expand = c(0,0)) +
     ggplot2::scale_y_discrete(labels = terms[[lang]]$vars) +
-    ggplot2::labs(x = terms[[lang]]$year, y = NULL) +
+    ggplot2::labs(x = terms[[lang]]$year, y = NULL, fill = "Anomaly") +
     ggplot2::theme_bw(base_size = base_size) +
-    ggplot2::theme(
-      panel.grid = ggplot2::element_blank(),
-      axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
-      legend.position = "bottom"
-    )
+    ggplot2::theme(panel.grid = ggplot2::element_blank(),
+                   axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
+                   legend.position = "none")
 
-  # 5. Assembly
-  # Heights: 3 parts line plot, 1 part scorecard
+  # 5. Assemble
   patchwork::wrap_plots(p1, p2, ncol = 1, heights = c(3, 1))
 }
