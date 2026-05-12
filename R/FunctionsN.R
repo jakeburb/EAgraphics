@@ -2597,7 +2597,7 @@ plot_physical_summary <- function(data,
 
   # 1. Define Order and Translations
   # Variable order for scorecard (Top to Bottom)
-  vars_in_order <- c("SST_combined", "T300", "IceSeasonalMaxVolume", "CILTmin")
+  vars_in_order <- c("SST_combined", "T300m", "IceSeasonalMaxVolume", "CILTmin")
 
   terms <- list(
     en = list(y_temp = "Temperature (°C)", y_ice = "Ice (km³)", year = "Year",
@@ -2621,7 +2621,7 @@ plot_physical_summary <- function(data,
       ),
       # Linetype logic: Proxy = dashed (1962-1982), SST = solid (1982+)
       lt = dplyr::case_when(
-        variable == "SST Proxy" ~ "dashed",
+        variable == "SSTProxy" ~ "dashed",
         TRUE ~ "solid"
       )
     ) |>
