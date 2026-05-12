@@ -2459,3 +2459,99 @@ plot_hypercapnic_area_timeseries <- function(data,
   # Side-by-side assembly
   p_estuary + p_gulf
 }
+
+
+
+#' Plot Physical Trends and Scorecard
+#'
+#' @description
+#' Creates a professional two-panel figure: a time series of physical oceanographic
+#' indicators (Ice, SST, CIL, T300) and a corresponding standardized anomaly scorecard.
+#'
+#' @param data Long-format dataframe containing 'year', 'variable', and 'value'.
+#' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
+#' @param year_range Numeric vector \code{c(start, end)}. Defaults to \code{c(1969, 2025)}.
+#' @param base_size Numeric. Base font size. Defaults to 14.
+#'
+#' @export
+plot_physical_summary <- function(data,
+                                  lang = "en",
+                                  year_range = c(1969, 2025),
+                                  base_size = 14) {
+
+  # 1. Translation Dictionary
+  terms <- list(
+    en = list(temp = "Temperature (°C)", ice = "Ice (km³)", year = "Year",
+              vars = c("IceSeasonMaxVolume" = "Ice", "SST_combined" = "SST",
+                       "CILTmin" = "CIL Tmin", "T300" = "300 m")),
+    fr = list(temp = "Température (°C)", ice = "Glace (km³)", year = "Année",
+              vars = c("IceSeasonMaxVolume" = "Glace", "SST_combined" = "SST",
+                       "CILTmin" = "CLF Tmin", "T300" = "300 m"))
+  )
+
+  # 2. Data Processing
+  # Combine SST and SST Proxy into one series with a linetype flag
+  processed_data <- data |>
+    dplyr::filter(year >= year_range[1], year <= year_range[2]) |>
+    dplyr::mutate(
+      display_var = dplyr::case_when(
+        variable %in% c("SST", "SST Proxy") ~ "SST_combined",
+        TRUE ~ variable
+      ),
+      is_proxy = ifelse(variable == "SST Proxy", "dashed", "solid")
+    ) |>
+    # Calculate anomalies for the scorecard based on the filtered period
+    dplyr::group_by(display_var) |>
+    dplyr::mutate(
+      anomaly = (value - mean(value, na.rm = TRUE)) / sd(value, na.rm = TRUE)
+    ) |>
+    dplyr::ungroup()
+
+  # 3. Top Plot: Time Series
+  p1 <- ggplot2::ggplot(processed_data,
+                        ggplot2::aes(x = year, y = value, color = display_var)) +
+    # Draw lines with linetype mapping for the SST Proxy
+    ggplot2::geom_line(ggplot2::aes(linetype = is_proxy), linewidth = 1) +
+    # The reference uses specific colors
+    ggplot2::scale_color_manual(values = c(
+      "SST_combined" = "#D55E00",
+      "T300" = "#009E73",
+      "IceSeasonMaxVolume" = "#4B0082", # Dark Purple
+      "CILTmin" = "#0072B2"
+    )) +
+    ggplot2::scale_linetype_identity() +
+    ggplot2::scale_x_continuous(limits = year_range, expand = c(0,0)) +
+    ggplot2::labs(y = terms[[lang]]$temp, x = NULL) +
+    ggplot2::theme_bw(base_size = base_size) +
+    ggplot2::theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      legend.position = "none",
+      plot.margin = ggplot2::margin(b = 0) # Tighten space to scorecard
+    )
+
+  # 4. Bottom Plot: Scorecard (Standardized Anomalies)
+  p2 <- ggplot2::ggplot(processed_data,
+                        ggplot2::aes(x = year, y = display_var, fill = anomaly)) +
+    ggplot2::geom_tile(color = "black", linewidth = 0.1) +
+    # Use the 0.5 increment logic from previous reviewer feedback
+    ggplot2::scale_fill_stepsn(
+      colors = c("#0000FF", "#7069FF", "#FFFFFF", "#FF7B5C", "#FF0000"),
+      breaks = seq(-2, 2, by = 0.5),
+      limits = c(-2.25, 2.25),
+      oob = scales::squish,
+      guide = ggplot2::guide_colorsteps(barwidth = 15, barheight = 0.5, title = "Anomaly")
+    ) +
+    ggplot2::scale_x_continuous(limits = year_range, breaks = seq(year_range[1], year_range[2], 5), expand = c(0,0)) +
+    ggplot2::scale_y_discrete(labels = terms[[lang]]$vars) +
+    ggplot2::labs(x = terms[[lang]]$year, y = NULL) +
+    ggplot2::theme_bw(base_size = base_size) +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
+      legend.position = "bottom"
+    )
+
+  # 5. Assembly
+  # Heights: 3 parts line plot, 1 part scorecard
+  patchwork::wrap_plots(p1, p2, ncol = 1, heights = c(3, 1))
+}
