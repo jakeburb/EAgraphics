@@ -2616,12 +2616,12 @@ plot_physical_summary <- function(data,
     dplyr::mutate(
       # Group SST and SST Proxy into one visual series
       display_var = dplyr::case_when(
-        variable %in% c("SST", "SSTProxy") ~ "SST_combined",
+        variable %in% c("SST", "SSTproxy") ~ "SST_combined",
         TRUE ~ variable
       ),
       # Linetype logic: Proxy = dashed (1962-1982), SST = solid (1982+)
       lt = dplyr::case_when(
-        variable == "SSTProxy" ~ "dashed",
+        variable == "SSTproxy" ~ "dashed",
         TRUE ~ "solid"
       )
     ) |>
