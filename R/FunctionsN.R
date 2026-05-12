@@ -2572,60 +2572,58 @@ plot_hypercapnic_area_timeseries <- function(data,
 
 
 
-#' Plot High-Fidelity Physical Summary Dashboard
+#' Plot Physical Summary Dashboard
 #'
 #' @description
-#' Recreates a professional multi-panel physical summary dashboard. The top panel
-#' displays time series for Temperature and Ice Volume using a dual Y-axis. The
-#' bottom panel is a standardized anomaly scorecard with statistical annotations
-#' (Mean ± S.D.) displayed on the right.
+#' Creates a two-panel dashboard: a time series of physical indicators and a standardized
+#' anomaly scorecard. Handles the transition from SST Proxy (dashed) to SST (solid)
+#' and displays Mean ± S.D. values to the right of the scorecard.
 #'
-#' @param data A long-format data frame containing 'year', 'variable', and 'value'.
+#' @param data A long-format data frame with columns: 'year', 'variable', 'value'.
 #' @param lang Language for labels: \code{"en"} (default) or \code{"fr"}.
-#' @param year_range Numeric vector \code{c(start, end)} for the x-axis. Defaults to \code{c(1969, 2025)}.
-#' @param base_size Numeric. Base font size for the plot. Defaults to \code{11}.
+#' @param year_range Numeric vector for x-axis. Defaults to \code{c(1969, 2025)}.
+#' @param base_size Numeric. Base font size. Defaults to \code{11}.
 #'
-#' @return A \code{patchwork} object consisting of two stacked panels.
+#' @return A \code{patchwork} object.
 #'
-#' @examples
-#' \dontrun{
-#'
-#' plot_physical_summary_pro(my_data, lang = "en", year_range = c(1969, 2025))
-#' }
-#'
-#' @importFrom ggplot2 ggplot aes geom_line geom_hline geom_tile geom_text scale_color_manual scale_linetype_identity scale_y_continuous scale_x_continuous scale_y_discrete scale_fill_stepsn labs theme_bw theme element_blank element_text margin sec_axis
-#' @importFrom dplyr filter mutate group_by ungroup case_when distinct left_join
-#' @importFrom patchwork wrap_plots
-#' @importFrom rlang %||%
 #' @export
-plot_physical_summary_pro <- function(data,
-                                      lang = "en",
-                                      year_range = c(1969, 2025),
-                                      base_size = 11) {
+#' @importFrom ggplot2 ggplot aes geom_line geom_hline geom_tile geom_text scale_color_manual scale_linetype_identity scale_y_continuous scale_x_continuous scale_y_discrete scale_fill_stepsn labs theme_bw theme element_blank element_text margin sec_axis unit
+#' @importFrom dplyr filter mutate group_by ungroup distinct left_join case_when
+#' @importFrom patchwork wrap_plots
+plot_physical_summary <- function(data,
+                                  lang = "en",
+                                  year_range = c(1969, 2025),
+                                  base_size = 11) {
 
-  # 1. Dictionary and Factor Ordering
-  # Order determines the vertical stacking in the scorecard
-  var_order <- c("SST_combined", "T300", "IceSeasonMaxVolume", "CILTmin")
+  # 1. Define Order and Translations
+  # Variable order for scorecard (Top to Bottom)
+  vars_in_order <- c("SST_combined", "T300", "IceSeasonMaxVolume", "CILTmin")
 
   terms <- list(
     en = list(y_temp = "Temperature (°C)", y_ice = "Ice (km³)", year = "Year",
-              vars = c("SST_combined" = "SST", "T300" = "300 m",
+              labs = c("SST_combined" = "SST", "T300" = "300 m",
                        "IceSeasonMaxVolume" = "Ice", "CILTmin" = "CIL")),
     fr = list(y_temp = "Température (°C)", y_ice = "Glace (km³)", year = "Année",
-              vars = c("SST_combined" = "SST", "T300" = "300 m",
+              labs = c("SST_combined" = "SST", "T300" = "300 m",
                        "IceSeasonMaxVolume" = "Glace", "CILTmin" = "CLF"))
   )
 
-  # 2. Data Preparation & Summary Statistics
+  # 2. Data Processing
   processed_data <- data |>
+    # Filter for year range while keeping earlier data for mean/sd calculation if desired
+    # For consistency with user request, we filter the whole set to the requested range
     dplyr::filter(year >= year_range[1], year <= year_range[2]) |>
     dplyr::mutate(
+      # Group SST and SST Proxy into one visual series
       display_var = dplyr::case_when(
         variable %in% c("SST", "SST Proxy") ~ "SST_combined",
         TRUE ~ variable
       ),
-      # Linetype logic for the SST Proxy transition
-      is_proxy = ifelse(variable == "SST Proxy", "dashed", "solid")
+      # Linetype logic: Proxy = dashed (1962-1982), SST = solid (1982+)
+      lt = dplyr::case_when(
+        variable == "SST Proxy" ~ "dashed",
+        TRUE ~ "solid"
+      )
     ) |>
     dplyr::group_by(display_var) |>
     dplyr::mutate(
@@ -2635,68 +2633,67 @@ plot_physical_summary_pro <- function(data,
       stat_label = paste0(round(m, 2), " ± ", round(s, 2))
     ) |>
     dplyr::ungroup() |>
-    # Ensure factor levels follow the preferred visual order
-    dplyr::mutate(display_var = factor(display_var, levels = rev(var_order)))
+    # Reverse order for ggplot categorical axis (plotted bottom-up)
+    dplyr::mutate(display_var = factor(display_var, levels = rev(vars_in_order)))
 
-  # 3. Top Plot: Time Series with Dual Axis
-  # Scale Ice by 11 to separate it from CIL and T300 lines
+  # 3. Time Series Plot (Top)
+  # Separating lines using a secondary axis for Ice
   p1 <- ggplot2::ggplot(processed_data, ggplot2::aes(x = year, y = value, color = display_var)) +
-    ggplot2::geom_line(ggplot2::aes(linetype = is_proxy), linewidth = 0.8) +
-    # Horizontal mean lines for each variable
+    ggplot2::geom_line(ggplot2::aes(linetype = lt), linewidth = 0.8) +
+    # Add horizontal reference lines
     ggplot2::geom_hline(ggplot2::aes(yintercept = m, color = display_var), alpha = 0.3, linetype = "dotted") +
     ggplot2::scale_color_manual(values = c(
       "SST_combined" = "#D55E00",
       "T300" = "#009E73",
-      "IceSeasonMaxVolume" = "#4B0082", # Dark Purple
+      "IceSeasonMaxVolume" = "#4B0082", # Dark Purple to distinguish from T300
       "CILTmin" = "#0072B2"
     )) +
     ggplot2::scale_linetype_identity() +
-    # Primary axis for Temperature, Secondary for Ice
+    # Primary Y: Temperature | Secondary Y: Ice Volume
     ggplot2::scale_y_continuous(
       name = terms[[lang]]$y_temp,
-      limits = c(-1, 12),
+      limits = c(-1.5, 12),
       sec.axis = ggplot2::sec_axis(~ . * 11, name = terms[[lang]]$y_ice)
     ) +
     ggplot2::scale_x_continuous(limits = year_range, expand = c(0,0)) +
     ggplot2::theme_bw(base_size = base_size) +
     ggplot2::theme(
+      panel.background = ggplot2::element_rect(fill = "white"),
       panel.grid.minor = ggplot2::element_blank(),
       legend.position = "none",
       axis.title.x = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_blank(),
-      plot.margin = ggplot2::margin(b = 0)
+      plot.margin = ggplot2::margin(b = 0, unit = "pt")
     )
 
-  # 4. Bottom Plot: Scorecard with Stats Labels
+  # 4. Scorecard Plot (Bottom)
   p2 <- ggplot2::ggplot(processed_data, ggplot2::aes(x = year, y = display_var, fill = anomaly)) +
     ggplot2::geom_tile(color = "black", linewidth = 0.1) +
-    # Standardized Anomaly Color Scale
+    # Diverging color scale for anomalies
     ggplot2::scale_fill_stepsn(
       colors = c("#0000FF", "#7069FF", "#FFFFFF", "#FF7B5C", "#FF0000"),
-      breaks = c(-3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5),
-      limits = c(-3.5, 3.5), oob = scales::squish
+      breaks = c(-2.5, -1.5, -0.5, 0.5, 1.5, 2.5),
+      limits = c(-3, 3), oob = scales::squish
     ) +
-    # Add the Mean ± SD text with categorical Y mapping
+    # Stats Label on the right
     ggplot2::geom_text(data = dplyr::distinct(processed_data, display_var, stat_label),
-                       ggplot2::aes(x = year_range[2] + 1,
-                                    y = display_var,
-                                    label = stat_label),
+                       ggplot2::aes(x = year_range[2] + 1, y = display_var, label = stat_label),
                        hjust = 0, size = base_size * 0.28, inherit.aes = FALSE) +
-    # Buffer X-axis to prevent text clipping
+    # Align X-axis with top plot; expand right for the text labels
     ggplot2::scale_x_continuous(limits = c(year_range[1], year_range[2] + 10),
                                 breaks = seq(year_range[1], year_range[2], 5),
                                 expand = c(0,0)) +
-    ggplot2::scale_y_discrete(labels = terms[[lang]]$vars) +
-    ggplot2::labs(x = terms[[lang]]$year, y = NULL, fill = "Anomaly") +
+    ggplot2::scale_y_discrete(labels = terms[[lang]]$labs) +
+    ggplot2::labs(x = terms[[lang]]$year, y = NULL) +
     ggplot2::theme_bw(base_size = base_size) +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(angle = 90, vjust = 0.5),
       legend.position = "none",
-      plot.margin = ggplot2::margin(t = 0, r = 10, b = 5, l = 5)
+      plot.margin = ggplot2::margin(t = 0, r = 10, b = 5, l = 5, unit = "pt")
     )
 
-  # 5. Assemble Panels
-  # Stacks time series (3 units) over scorecard (1 unit)
+  # 5. Combine and Align
+  # 3:1 height ratio keeps the scorecard compact
   patchwork::wrap_plots(p1, p2, ncol = 1, heights = c(3, 1))
 }
