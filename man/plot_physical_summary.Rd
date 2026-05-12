@@ -2,12 +2,13 @@
 % Please edit documentation in R/FunctionsN.R
 \name{plot_physical_summary}
 \alias{plot_physical_summary}
-\title{Plot Physical Summary Dashboard}
+\title{Plot Physical Summary with 1991-2020 Climatology}
 \usage{
 plot_physical_summary(
   data,
   lang = "en",
   year_range = c(1969, 2025),
+  clim_range = c(1991, 2020),
   base_size = 11
 )
 }
@@ -16,15 +17,14 @@ plot_physical_summary(
 
 \item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Numeric vector for x-axis. Defaults to \code{c(1969, 2025)}.}
+\item{year_range}{Numeric vector for plot x-axis. Defaults to \code{c(1969, 2025)}.}
+
+\item{clim_range}{Numeric vector for baseline mean. Defaults to \code{c(1991, 2020)}.}
 
 \item{base_size}{Numeric. Base font size. Defaults to \code{11}.}
 }
-\value{
-A \code{patchwork} object.
-}
 \description{
-Creates a two-panel dashboard: a time series of physical indicators and a standardized
-anomaly scorecard. Handles the transition from SST Proxy (dashed) to SST (solid)
-with a 1982 cutoff. Displays Mean ± S.D. values to the right of the scorecard.
+Creates a two-panel dashboard where anomalies and summary statistics are
+calculated based on the 1991-2020 climatological mean. Includes dual-axis
+time series and an anomaly scorecard.
 }
