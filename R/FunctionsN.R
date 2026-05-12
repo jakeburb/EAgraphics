@@ -2597,15 +2597,15 @@ plot_physical_summary <- function(data,
 
   # 1. Define Order and Translations
   # Variable order for scorecard (Top to Bottom)
-  vars_in_order <- c("SST_combined", "T300", "IceSeasonMaxVolume", "CILTmin")
+  vars_in_order <- c("SST_combined", "T300", "IceSeasonalMaxVolume", "CILTmin")
 
   terms <- list(
     en = list(y_temp = "Temperature (°C)", y_ice = "Ice (km³)", year = "Year",
               labs = c("SST_combined" = "SST", "T300" = "300 m",
-                       "IceSeasonMaxVolume" = "Ice", "CILTmin" = "CIL")),
+                       "IceSeasonalMaxVolume" = "Ice", "CILTmin" = "CIL")),
     fr = list(y_temp = "Température (°C)", y_ice = "Glace (km³)", year = "Année",
               labs = c("SST_combined" = "SST", "T300" = "300 m",
-                       "IceSeasonMaxVolume" = "Glace", "CILTmin" = "CLF"))
+                       "IceSeasonalMaxVolume" = "Glace", "CILTmin" = "CLF"))
   )
 
   # 2. Data Processing
