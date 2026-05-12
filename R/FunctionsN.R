@@ -2601,10 +2601,10 @@ plot_physical_summary <- function(data,
 
   terms <- list(
     en = list(y_temp = "Temperature (°C)", y_ice = "Ice (km³)", year = "Year",
-              labs = c("SST_combined" = "SST", "T300" = "300 m",
+              labs = c("SST_combined" = "SST", "T300m" = "300 m",
                        "IceSeasonalMaxVolume" = "Ice", "CILTmin" = "CIL")),
     fr = list(y_temp = "Température (°C)", y_ice = "Glace (km³)", year = "Année",
-              labs = c("SST_combined" = "SST", "T300" = "300 m",
+              labs = c("SST_combined" = "SST", "T300m" = "300 m",
                        "IceSeasonalMaxVolume" = "Glace", "CILTmin" = "CLF"))
   )
 
@@ -2616,7 +2616,7 @@ plot_physical_summary <- function(data,
     dplyr::mutate(
       # Group SST and SST Proxy into one visual series
       display_var = dplyr::case_when(
-        variable %in% c("SST", "SST Proxy") ~ "SST_combined",
+        variable %in% c("SST", "SSTProxy") ~ "SST_combined",
         TRUE ~ variable
       ),
       # Linetype logic: Proxy = dashed (1962-1982), SST = solid (1982+)
