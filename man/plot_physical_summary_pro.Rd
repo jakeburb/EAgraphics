@@ -2,7 +2,7 @@
 % Please edit documentation in R/FunctionsN.R
 \name{plot_physical_summary_pro}
 \alias{plot_physical_summary_pro}
-\title{Plot High-Fidelity Physical Summary}
+\title{Plot High-Fidelity Physical Summary Dashboard}
 \usage{
 plot_physical_summary_pro(
   data,
@@ -12,15 +12,27 @@ plot_physical_summary_pro(
 )
 }
 \arguments{
-\item{data}{Long-format dataframe with 'year', 'variable', and 'value'.}
+\item{data}{A long-format data frame containing 'year', 'variable', and 'value'.}
 
-\item{lang}{Language: \code{"en"} (default) or \code{"fr"}.}
+\item{lang}{Language for labels: \code{"en"} (default) or \code{"fr"}.}
 
-\item{year_range}{Numeric vector \code{c(1969, 2025)}.}
+\item{year_range}{Numeric vector \code{c(start, end)} for the x-axis. Defaults to \code{c(1969, 2025)}.}
 
-\item{base_size}{Numeric. Base font size.}
+\item{base_size}{Numeric. Base font size for the plot. Defaults to \code{11}.}
+}
+\value{
+A \code{patchwork} object consisting of two stacked panels.
 }
 \description{
-Recreates a professional multi-panel physical summary with separate scales
-for Temperature and Ice, integrated with a standardized anomaly scorecard.
+Recreates a professional multi-panel physical summary dashboard. The top panel
+displays time series for Temperature and Ice Volume using a dual Y-axis. The
+bottom panel is a standardized anomaly scorecard with statistical annotations
+(Mean ± S.D.) displayed on the right.
+}
+\examples{
+\dontrun{
+
+plot_physical_summary_pro(my_data, lang = "en", year_range = c(1969, 2025))
+}
+
 }
