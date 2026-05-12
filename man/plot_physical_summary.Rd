@@ -26,5 +26,5 @@ A \code{patchwork} object.
 \description{
 Creates a two-panel dashboard: a time series of physical indicators and a standardized
 anomaly scorecard. Handles the transition from SST Proxy (dashed) to SST (solid)
-and displays Mean ± S.D. values to the right of the scorecard.
+with a 1982 cutoff. Displays Mean ± S.D. values to the right of the scorecard.
 }
