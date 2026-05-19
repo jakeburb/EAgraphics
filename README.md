@@ -245,7 +245,7 @@ for publication-quality output.
 | **Scorecard Value** | User-supplied | **Standardized Score** ($Z-score$) |
 | **Best For** | Single time-series trends | Depth strata, areas, or species groups |
 
-\##Examples
+\##Examples of Use of Functions
 
 ## Best Practices of Use
 
@@ -253,6 +253,6 @@ for publication-quality output.
 
 ## Citation for Package:
 
-Burbank, J., Duplisea, D.E. 2026. EAgraphics: An R Package for
-Visualizing Ecosystem Approaches to Fisheries Management. R package
+Burbank, J., Sutton, J.T., Duplisea, D.E. 2026. EAgraphics: An R Package
+for Visualizing Ecosystem Approaches to Fisheries Management. R package
 version 0.1 <https://github.com/jakeburb/EAgraphics>

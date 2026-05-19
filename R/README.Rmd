@@ -121,6 +121,6 @@ An advanced variation of the anomaly tool designed for multi-layered datasets, s
 
 ## Citation for Package:
 
-Burbank, J., Duplisea, D.E. 2026. EAgraphics: An R Package for Visualizing Ecosystem Approaches to Fisheries Management. R package version 0.1 https://github.com/jakeburb/EAgraphics
+Burbank, J., Sutton, J.T., Duplisea, D.E. 2026. EAgraphics: An R Package for Visualizing Ecosystem Approaches to Fisheries Management. R package version 0.1 https://github.com/jakeburb/EAgraphics
 
 
