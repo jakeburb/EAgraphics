@@ -2214,8 +2214,8 @@ plot_predator_raw_scaled <- function(data = gslea::EA.data,
   )
 
   terms <- list(
-    en = c(xlab = "Year", ylab = "Abundance (scaled)", unit100 = "/ 100", unit10 = "/ 10"),
-    fr = c(xlab = "Année", ylab = "Abondance (indexée)", unit100 = "/ 100", unit10 = "/ 10")
+    en = c(xlab = "Year", ylab = "Abundance", unit100 = "/ 100", unit10 = "/ 10"),
+    fr = c(xlab = "Année", ylab = "Abondance", unit100 = "/ 100", unit10 = "/ 10")
   )
 
   # 2. Data Prep & Transformation
