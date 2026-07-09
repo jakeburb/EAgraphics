@@ -2702,7 +2702,7 @@ plot_physical_summary <- function(data,
 }
 
 
-#' Plot Generic Anomaly with Standardized Scorecard With Composite Computed Internally
+#' Plot Generic Anomaly with Standardized Scorecard With Composite Computed Internally-Blank Scorecard With Colour Legend for Ecoystem Summary
 #'
 #' @description
 #' Creates a publication-quality anomaly plot with stacked bars and a scorecard.
@@ -2788,20 +2788,60 @@ plot_anomaly_comp_B <- function(data,
 
   if (!rlang::quo_is_null(var_enquo)) {
     var_nm <- rlang::as_label(var_enquo)
-    data[[var_nm]] <- as.character(data[[var_nm]])
 
+    # Define translation dictionary
+    region_dict <- c(
+      "Magdalen Shallows"   = "Plateau madelinot",
+      "Estuary & NW Gulf"   = "Estuaire et N.-O. du golfe",
+      "NE Gulf"             = "N.-E. du golfe",
+      "Center Gulf & Cabot" = "Centre du golfe et Cabot"
+    )
+
+    # 1. Capture the exact baseline order (from factor levels or original appearance)
+    if (is.factor(data[[var_nm]])) {
+      orig_levels <- levels(data[[var_nm]])
+    } else {
+      # If numeric depths exist, sort numerically; otherwise preserve original unique order
+      raw_unique <- unique(data[[var_nm]])
+      suppressWarnings({
+        has_nums <- any(!is.na(as.numeric(gsub("[^0-9.]", "", raw_unique))))
+      })
+
+      if (has_nums) {
+        orig_levels <- raw_unique[order(as.numeric(gsub("[^0-9.]", "", raw_unique)))]
+      } else {
+        orig_levels <- raw_unique
+      }
+    }
+
+    #  Append units if supplied
+    data[[var_nm]] <- as.character(data[[var_nm]])
     if (!is.null(unit)) {
       data[[var_nm]] <- ifelse(
         grepl(unit, data[[var_nm]], fixed = TRUE),
         data[[var_nm]],
         paste(data[[var_nm]], unit)
       )
+      orig_levels <- paste(orig_levels, unit)
     }
 
-    # Sort legend items numerically to handle depths correctly
-    unique_vals <- unique(data[[var_nm]])
-    numeric_sort <- unique_vals[order(as.numeric(gsub("[^0-9.]", "", unique_vals)))]
-    data[[var_nm]] <- factor(data[[var_nm]], levels = numeric_sort)
+    # Translate data AND preserve factor level ordering if French
+    if (lang == "fr") {
+      # Translate actual row values
+      data[[var_nm]] <- ifelse(data[[var_nm]] %in% names(region_dict),
+                               region_dict[data[[var_nm]]],
+                               data[[var_nm]])
+
+      # Translate the level sequence to match
+      final_levels <- ifelse(orig_levels %in% names(region_dict),
+                             region_dict[orig_levels],
+                             orig_levels)
+    } else {
+      final_levels <- orig_levels
+    }
+
+    # Lock in factor levels in the identical sequence
+    data[[var_nm]] <- factor(data[[var_nm]], levels = final_levels)
   }
 
   # 3. Top Plot Construction
