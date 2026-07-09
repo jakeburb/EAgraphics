@@ -2,7 +2,7 @@
 % Please edit documentation in R/FunctionsN.R
 \name{plot_anomaly_comp_B}
 \alias{plot_anomaly_comp_B}
-\title{Plot Generic Anomaly with Standardized Scorecard With Composite Computed Internally}
+\title{Plot Generic Anomaly with Standardized Scorecard With Composite Computed Internally-Blank Scorecard With Colour Legend for Ecoystem Summary}
 \usage{
 plot_anomaly_comp_B(
   data,
