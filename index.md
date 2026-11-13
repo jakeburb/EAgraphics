@@ -1,6 +1,6 @@
-# \# EAgraphics
+# EAgraphics
 
-Jacob Burbank 2026-02-05
+Authored by: Jacob Burbank 2026-02-05 (Updated November 13, 2026)
 
 ## Overview
 
@@ -18,9 +18,9 @@ standard long-format conventions.
 ## How To Use
 
 View the functions and their capabilities in the package website:
-<https://jakeburb.github.io/EAgraphics/index.html> The functions are
+<https://jakeburb.github.io/EAgraphics/index.html>. The functions are
 organized in 5 main categories: Environmental Indicators, Biological
-Indicators, Fisheries Indicators, Anomaly Analysis, Other Functions
+Indicators, Fisheries Indicators, Anomaly Analysis and All Functions
 
 ### Key Capabilities
 
