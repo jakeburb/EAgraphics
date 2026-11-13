@@ -52,7 +52,7 @@
 - [`plot_size_spectrum_anomalies()`](https://jakeburb.github.io/EAgraphics/reference/plot_size_spectrum_anomalies.md)
   : Plot Size Spectrum Anomalies
 
-## Other functions
+## All functions
 
 - [`calc_anomaly()`](https://jakeburb.github.io/EAgraphics/reference/calc_anomaly.md)
   : Calculate Anomalies from a Baseline Mean
