@@ -3,7 +3,7 @@ Type: Package
 Title: Graphics for Ecosystem Approaches to Fisheries Management
 Version: 0.1.0
 Authors@R: c(
-    person("Jacob", "Burbank", email = "Jacob.Burbank@dfo-mpo.gc.ca", role = c("aut", "cre"))
+    person("Jacob", "Burbank", email = "Jacob.Burbank@dfo-mpo.gc.ca", role = c("aut", "cre")),
     person("Jolene", "Sutton", email = "Jolene.Sutton@dfo-mpo.gc.ca", role = "aut"),
     person("Daniel", "Duplisea", email = "Daniel.Duplisea@dfo-mpo.gc.ca", role = "aut")
   )
