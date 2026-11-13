@@ -22,8 +22,8 @@ Depends:
     patchwork,
     R (>= 3.5)
 Remotes:
-	Github::duplisea/gslea,
-	GitHub::pbs-assess/rosettafish
+	github::duplisea/gslea,
+	github::pbs-assess/rosettafish
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
