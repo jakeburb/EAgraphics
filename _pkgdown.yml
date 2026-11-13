@@ -3,6 +3,10 @@ url: https://jakeburb.github.io/EAgraphics/
 template:
   bootstrap: 5
 
+logo:
+  src: man/figures/logo.png
+  alt: EAgraphics logo
+
 home:
   title: EAgraphics
   description: >
