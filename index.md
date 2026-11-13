@@ -1,4 +1,4 @@
-# README
+# \# EAgraphics
 
 Jacob Burbank 2026-02-05
 
