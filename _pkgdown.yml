@@ -1,0 +1,74 @@
+url: https://jakeburb.github.io/EAgraphics/
+template:
+  bootstrap: 5
+
+url: https://jakeburb.github.io/EAgraphics/
+
+template:
+  bootstrap: 5
+
+home:
+  title: EAgraphics
+  description: >
+    Visualization tools for Ecosystem Approaches
+    to Fisheries Management.
+
+navbar:
+  structure:
+    left: [intro, reference, articles, news]
+    right: [github]
+
+  components:
+    intro:
+      text: Getting Started
+      href: index.html
+    reference:
+      text: Functions
+      href: reference/index.html
+    articles:
+      text: Tutorials
+      menu:
+      - text: Tutorials
+        href: articles/index.html
+    news:
+      text: News
+      href: news/index.html
+    github:
+      icon: fa-github
+      href: https://github.com/jakeburb/EAgraphics
+
+reference:
+  - title: Environmental indicators
+    contents:
+      - plot_gslea_temperature
+      - plot_gslea_ice
+      - plot_physical_summary
+      - plot_hypercapnic_area_timeseries
+      - plot_hypoxic_area_timeseries
+
+  - title: Biological indicators
+    contents:
+      - plot_gslea_plankton
+      - plot_abundance_trends
+      - plot_predator_ranged
+      - plot_predator_log_scaled
+      - plot_predator_raw_scaled
+      - plot_size_spectrum_slopes_f
+      - plot_size_spectrum_f
+
+  - title: Fisheries indicators
+    contents:
+      - plot_landings_stacked
+      - plot_stock_status_heatmap
+
+  - title: Anomaly analysis
+    contents:
+      - calc_anomaly
+      - plot_anomaly
+      - plot_anomaly_comp
+      - plot_condition_guild_anomalies
+      - plot_size_spectrum_anomalies
+
+  - title: Other functions
+    contents:
+      - starts_with("")
