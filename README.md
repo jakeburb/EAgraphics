@@ -1,4 +1,4 @@
-README
+# EAgraphics <img src="man/figures/logo.png" align="right" width="150" alt="EAgraphics logo" />
 ================
 Jacob Burbank
 2026-02-05
