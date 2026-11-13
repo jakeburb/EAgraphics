@@ -69,6 +69,6 @@ reference:
       - plot_condition_guild_anomalies
       - plot_size_spectrum_anomalies
 
-  - title: Other functions
+  - title: All functions
     contents:
       - starts_with("")
