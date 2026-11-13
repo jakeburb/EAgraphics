@@ -60,6 +60,11 @@
 </h2>
 <p>The EAgraphics package provides a suite of user-friendly functions designed to visualize data and indicators frequently utilized in Ecosystem Approaches (EA) to Fisheries Management.</p>
 <p>Initially developed as a visualization companion to the Gulf of St. Lawrence Ecosystem Approaches (gslea) R package (<a href="https://github.com/duplisea/gslea" class="external-link uri">https://github.com/duplisea/gslea</a>), EAgraphics is built to be flexible. While it integrates seamlessly with gslea data structures, it is equally capable of visualizing any EA-relevant datasets that follow standard long-format conventions.</p>
+</div>
+<div class="section level2">
+<h2 id="how-to-use">How To Use<a class="anchor" aria-label="anchor" href="#how-to-use"></a>
+</h2>
+<p>View the functions and their capabilities in the package website: <a href="https://jakeburb.github.io/EAgraphics/index.html" class="uri">https://jakeburb.github.io/EAgraphics/index.html</a> The functions are organized in 5 main categories: Environmental Indicators, Biological Indicators, Fisheries Indicators, Anomaly Analysis, Other Functions</p>
 <div class="section level3">
 <h3 id="key-capabilities">Key Capabilities<a class="anchor" aria-label="anchor" href="#key-capabilities"></a>
 </h3>
@@ -73,7 +78,7 @@
 <div class="section level2">
 <h2 id="why-use-eagraphics">Why use EAgraphics?<a class="anchor" aria-label="anchor" href="#why-use-eagraphics"></a>
 </h2>
-<p>Ecosystem Approach data is often multi-faceted and spatially complex. This package reduces the “coding overhead” required to produce consistent figures across multiple indicators. Whether you are comparing sea surface temperature across different Ecosystem Assessment Regions (EARs) or visualizing the status of multiple fish stocks simultaneously, EAgraphics ensures the output is standardized, reproducible, and ready for technical reports or peer-reviewed publications. Also in line with billinguial requirements in DFO Res Docs, this package provides the ability to translated plots to provide both english and french versions of all figures.</p>
+<p>Ecosystem Approach data is often multi-faceted and spatially complex. This package reduces the “coding overhead” required to produce consistent figures across multiple indicators. Whether you are comparing sea surface temperature across different Ecosystem Assessment Regions (EARs) or visualizing the status of multiple fish stocks simultaneously, EAgraphics ensures the output is standardized, reproducible, and ready for technical reports or peer-reviewed publications. Also in line with billinguial requirements in DFO Res Docs, this package provides the ability to rapidly and easily produce all figures in both english and french.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -83,11 +88,6 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"jakeburb/EAgraphics"</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://jakeburb.github.io/EAgraphics/">EAgraphics</a></span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="how-to-use">How To Use<a class="anchor" aria-label="anchor" href="#how-to-use"></a>
-</h2>
-<p>View the functions and their capabilities in the package website: <a href="https://jakeburb.github.io/EAgraphics/index.html" class="uri">https://jakeburb.github.io/EAgraphics/index.html</a> The functions are organized in 5 main categories: -<u>Environmental Indicators</u> -<u>Biological Indicators</u> -<u>Fisheries Indicators</u> -<u>Anomaly Analysis</u> -<u>Other Functions</u></p>
 </div>
 <div class="section level2">
 <h2 id="citation-for-package">Citation for Package:<a class="anchor" aria-label="anchor" href="#citation-for-package"></a>
@@ -114,6 +114,8 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Jacob Burbank <br><small class="roles"> Author, maintainer </small>   </li>
+<li>Jolene Sutton <br><small class="roles"> Author </small>   </li>
+<li>Daniel Duplisea <br><small class="roles"> Author </small>   </li>
 </ul>
 </div>
 
@@ -124,7 +126,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Jacob Burbank.</p>
+  <p>Developed by Jacob Burbank, Jolene Sutton, Daniel Duplisea.</p>
 </div>
 
 <div class="pkgdown-footer-right">

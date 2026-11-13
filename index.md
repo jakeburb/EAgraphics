@@ -15,6 +15,13 @@ flexible. While it integrates seamlessly with gslea data structures, it
 is equally capable of visualizing any EA-relevant datasets that follow
 standard long-format conventions.
 
+## How To Use
+
+View the functions and their capabilities in the package website:
+<https://jakeburb.github.io/EAgraphics/index.html> The functions are
+organized in 5 main categories: Environmental Indicators, Biological
+Indicators, Fisheries Indicators, Anomaly Analysis, Other Functions
+
 ### Key Capabilities
 
 -Publication-Quality Figures: Standardized plotting for physical
@@ -52,8 +59,8 @@ sea surface temperature across different Ecosystem Assessment Regions
 EAgraphics ensures the output is standardized, reproducible, and ready
 for technical reports or peer-reviewed publications. Also in line with
 billinguial requirements in DFO Res Docs, this package provides the
-ability to translated plots to provide both english and french versions
-of all figures.
+ability to rapidly and easily produce all figures in both english and
+french.
 
 ## Installation
 
@@ -66,14 +73,6 @@ install.packages("devtools")
 devtools::install_github("jakeburb/EAgraphics")
 library(EAgraphics)
 ```
-
-## How To Use
-
-View the functions and their capabilities in the package website:
-<https://jakeburb.github.io/EAgraphics/index.html> The functions are
-organized in 5 main categories: -*Environmental Indicators* -*Biological
-Indicators* -*Fisheries Indicators* -*Anomaly Analysis* -*Other
-Functions*
 
 ## Citation for Package:
 
